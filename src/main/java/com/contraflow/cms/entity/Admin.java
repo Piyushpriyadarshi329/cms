@@ -20,12 +20,18 @@ public class Admin {
 
     @Column(nullable = false)
     private String firstName;
+
+    @Column(nullable = false)
     private String lastName;
+
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
 
     @Builder.Default
-    private boolean verified=false;
+    private boolean verified=true;
 
     @Column(nullable = false,updatable = false)
     private LocalDateTime created_at;

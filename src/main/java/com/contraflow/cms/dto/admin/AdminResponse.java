@@ -1,9 +1,6 @@
-package com.contraflow.cms.dto;
+package com.contraflow.cms.dto.admin;
 
-import com.contraflow.cms.repository.AdminRepository;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 
 @AllArgsConstructor

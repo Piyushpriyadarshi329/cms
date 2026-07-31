@@ -1,11 +1,13 @@
 package com.contraflow.cms.controller;
 
 
-import com.contraflow.cms.dto.AdminResponse;
+import com.contraflow.cms.dto.admin.AdminRequest;
+import com.contraflow.cms.dto.admin.AdminResponse;
+import com.contraflow.cms.dto.admin.LoginRequest;
+import com.contraflow.cms.dto.admin.LoginResponse;
 import com.contraflow.cms.services.AdminService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +29,15 @@ public class AdminController {
         return adminService.getAllAdmin();
     }
 
+    @PostMapping("/create")
+    public String createAdmin(@Valid @RequestBody AdminRequest adminRequest){
+        adminService.createAdmin(adminRequest);
+        return "Admin create successfully";
+    }
+
+    @PostMapping("/login")
+    public LoginResponse loginHandler(@Valid @RequestBody LoginRequest loginRequest){
+       return adminService.loginHandler(loginRequest);
+    }
 
 }
