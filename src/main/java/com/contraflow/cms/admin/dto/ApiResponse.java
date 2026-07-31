@@ -1,4 +1,4 @@
-package com.contraflow.cms.dto;
+package com.contraflow.cms.admin.dto;
 
 import lombok.Builder;
 import lombok.Getter;

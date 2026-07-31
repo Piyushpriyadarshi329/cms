@@ -1,6 +1,6 @@
-package com.contraflow.cms.repository;
+package com.contraflow.cms.admin.repository;
 
-import com.contraflow.cms.entity.Admin;
+import com.contraflow.cms.admin.entity.Admin;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.contraflow.cms.entity;
+package com.contraflow.cms.admin.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

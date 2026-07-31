@@ -1,12 +1,12 @@
-package com.contraflow.cms.services;
+package com.contraflow.cms.admin.services;
 
 
-import com.contraflow.cms.dto.admin.AdminRequest;
-import com.contraflow.cms.dto.admin.AdminResponse;
-import com.contraflow.cms.dto.admin.LoginRequest;
-import com.contraflow.cms.dto.admin.LoginResponse;
-import com.contraflow.cms.entity.Admin;
-import com.contraflow.cms.repository.AdminRepository;
+import com.contraflow.cms.admin.dto.admin.AdminRequest;
+import com.contraflow.cms.admin.dto.admin.AdminResponse;
+import com.contraflow.cms.admin.dto.admin.LoginRequest;
+import com.contraflow.cms.admin.dto.admin.LoginResponse;
+import com.contraflow.cms.admin.entity.Admin;
+import com.contraflow.cms.admin.repository.AdminRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
