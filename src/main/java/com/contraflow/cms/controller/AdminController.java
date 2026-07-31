@@ -1,12 +1,15 @@
 package com.contraflow.cms.controller;
 
 
+import com.contraflow.cms.dto.ApiResponse;
 import com.contraflow.cms.dto.admin.AdminRequest;
 import com.contraflow.cms.dto.admin.AdminResponse;
 import com.contraflow.cms.dto.admin.LoginRequest;
 import com.contraflow.cms.dto.admin.LoginResponse;
 import com.contraflow.cms.services.AdminService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,15 +27,16 @@ public class AdminController {
 
 
     @GetMapping()
-    public List<AdminResponse> getAdmin(){
-
-        return adminService.getAllAdmin();
+    public ResponseEntity<ApiResponse<List<AdminResponse>>> getAdmin(){
+        List<AdminResponse> admins = adminService.getAllAdmin();
+        return ResponseEntity.ok(ApiResponse.success("Admins fetched successfully", admins));
     }
 
     @PostMapping("/create")
-    public String createAdmin(@Valid @RequestBody AdminRequest adminRequest){
-        adminService.createAdmin(adminRequest);
-        return "Admin create successfully";
+    public ResponseEntity<ApiResponse<AdminResponse>> createAdmin(@Valid @RequestBody AdminRequest adminRequest){
+        AdminResponse created = adminService.createAdmin(adminRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Admin created successfully", created));
     }
 
     @PostMapping("/login")

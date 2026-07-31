@@ -26,18 +26,23 @@ public class AdminService {
 
     public List<AdminResponse> getAllAdmin(){
 
-        return adminRepository.findAll().stream().map(admin->new AdminResponse(admin.getId(),admin.getEmail(),admin.getFirstName(),admin.getLastName())
+        return adminRepository.findAll().stream().map(admin->new AdminResponse(admin.getId(),admin.getFirstName(),admin.getLastName(),admin.getEmail())
 
         ).toList();
     }
-    public String createAdmin(AdminRequest adminRequest ){
+
+
+
+
+
+    public AdminResponse createAdmin(AdminRequest adminRequest ){
          Admin admin = new Admin();
          admin.setFirstName(adminRequest.getFirstName());
          admin.setLastName(adminRequest.getLastName());
          admin.setEmail(adminRequest.getEmail());
          admin.setPassword(adminRequest.getPassword());
-        adminRepository.save( admin);
-        return "Admin Created Successfully";
+        Admin saved = adminRepository.save(admin);
+        return new AdminResponse(saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail());
     }
 
     public LoginResponse loginHandler(LoginRequest loginRequest){

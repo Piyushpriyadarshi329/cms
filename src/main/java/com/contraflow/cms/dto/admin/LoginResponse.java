@@ -11,11 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LoginResponse {
-
     private String firstName;
     private String lastName;
     private String email;
-
     @Builder.Default
     private boolean isLogin = false;
 
