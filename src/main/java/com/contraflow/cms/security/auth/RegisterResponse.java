@@ -1,5 +1,4 @@
-package com.contraflow.cms.admin.dto.admin;
-
+package com.contraflow.cms.security.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class LoginResponse {
+public class RegisterResponse {
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;
-    @Builder.Default
-    private boolean isLogin = false;
-
+    private String message;
 }

@@ -3,23 +3,23 @@ package com.contraflow.cms.admin.services;
 
 import com.contraflow.cms.admin.dto.admin.AdminRequest;
 import com.contraflow.cms.admin.dto.admin.AdminResponse;
-import com.contraflow.cms.admin.dto.admin.LoginRequest;
-import com.contraflow.cms.admin.dto.admin.LoginResponse;
 import com.contraflow.cms.admin.entity.Admin;
 import com.contraflow.cms.admin.repository.AdminRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AdminService {
 
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AdminService(AdminRepository adminRepository){
+    public AdminService(AdminRepository adminRepository, PasswordEncoder passwordEncoder){
 
         this.adminRepository= adminRepository;
+        this.passwordEncoder = passwordEncoder;
 
     }
 
@@ -40,27 +40,8 @@ public class AdminService {
          admin.setFirstName(adminRequest.getFirstName());
          admin.setLastName(adminRequest.getLastName());
          admin.setEmail(adminRequest.getEmail());
-         admin.setPassword(adminRequest.getPassword());
+         admin.setPassword(passwordEncoder.encode(adminRequest.getPassword()));
         Admin saved = adminRepository.save(admin);
         return new AdminResponse(saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail());
-    }
-
-    public LoginResponse loginHandler(LoginRequest loginRequest){
-      Optional<Admin> optionalAdmin= adminRepository.findByEmail(loginRequest.getEmail());
-      if(optionalAdmin.isEmpty()){
-          throw new RuntimeException("Invalid email or password");
-      }
-      Admin admin = optionalAdmin.get();
-
-      if(!admin.getPassword().equals(loginRequest.getPassword())){
-          throw new RuntimeException("Invalid email or password");
-      }
-
-      return LoginResponse.builder()
-              .firstName(admin.getFirstName())
-              .lastName(admin.getLastName())
-              .email(admin.getEmail())
-              .isLogin(true)
-              .build();
     }
 }

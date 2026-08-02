@@ -4,8 +4,6 @@ package com.contraflow.cms.admin.controller;
 import com.contraflow.cms.admin.dto.ApiResponse;
 import com.contraflow.cms.admin.dto.admin.AdminRequest;
 import com.contraflow.cms.admin.dto.admin.AdminResponse;
-import com.contraflow.cms.admin.dto.admin.LoginRequest;
-import com.contraflow.cms.admin.dto.admin.LoginResponse;
 import com.contraflow.cms.admin.services.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -37,11 +35,6 @@ public class AdminController {
         AdminResponse created = adminService.createAdmin(adminRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Admin created successfully", created));
-    }
-
-    @PostMapping("/login")
-    public LoginResponse loginHandler(@Valid @RequestBody LoginRequest loginRequest){
-       return adminService.loginHandler(loginRequest);
     }
 
 }
