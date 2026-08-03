@@ -34,8 +34,8 @@ public class TenantController {
     }
 
     @PutMapping("/{id}")
-    public Tenant updateTenant(@Valid @RequestBody Tenant tenant,@PathVariable Long id){
-        return tenantService.updateTenant(tenant,id);
+    public Tenant updateTenant(@Valid @RequestBody TenantRequest tenantRequest,@PathVariable Long id){
+        return tenantService.updateTenant(tenantRequest,id);
     }
 
     @DeleteMapping("/{id}")
