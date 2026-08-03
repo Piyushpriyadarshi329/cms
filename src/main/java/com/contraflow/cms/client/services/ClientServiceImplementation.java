@@ -6,9 +6,13 @@ import com.contraflow.cms.client.dto.ClientResponse;
 import java.util.List;
 
 public interface ClientServiceImplementation {
-//    ClientResponse createClient(ClientRequest request);
-//    ClientResponse getClientById(Long id);
+    ClientResponse createClient(ClientRequest request);
+
     List<ClientResponse> getAllClients();
-//    ClientResponse updateClient(Long id, ClientRequest request);
-//    void deleteClient(Long id);
+
+    ClientResponse getClientById(Long id);
+
+    ClientResponse updateClient(Long id, ClientRequest request);
+
+    void deleteClient(Long id);
 }

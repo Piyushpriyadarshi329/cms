@@ -5,7 +5,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ClientRequest {
     private Long tenantId;
 
@@ -34,4 +38,5 @@ public class ClientRequest {
 
     private String pincode;
 
+    private String country;
 }
