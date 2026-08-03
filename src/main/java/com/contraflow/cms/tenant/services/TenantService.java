@@ -57,19 +57,18 @@ public class TenantService {
         return tenantRepository.findAll();
     }
 
-    public Tenant updateTenant(Tenant tenant, Long id){
+    public Tenant updateTenant(TenantRequest request, Long id){
         Tenant tenant1 = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
-        tenant1.setName(tenant.getName());
-        tenant1.setLegalName(tenant.getLegalName());
-        tenant1.setEmail(tenant.getEmail());
-        tenant1.setLogoUrl(tenant.getLogoUrl());
-        tenant1.setMobile(tenant.getMobile());
-        tenant1.setAddress(tenant.getAddress());
-        tenant1.setCity(tenant.getCity());
-        tenant1.setState(tenant.getState());
-        tenant1.setPinCode(tenant.getPinCode());
-        tenant1.setCountry(tenant.getCountry());
-        tenant1.setVerified(tenant.getVerified());
+        tenant1.setName(request.getName());
+        tenant1.setLegalName(request.getLegalName());
+        tenant1.setEmail(request.getEmail());
+        tenant1.setLogoUrl(request.getLogoUrl());
+        tenant1.setMobile(request.getMobile());
+        tenant1.setAddress(request.getAddress());
+        tenant1.setCity(request.getCity());
+        tenant1.setState(request.getState());
+        tenant1.setPinCode(request.getPinCode());
+        tenant1.setCountry(request.getCountry());
         return tenantRepository.save(tenant1);
     }
 
