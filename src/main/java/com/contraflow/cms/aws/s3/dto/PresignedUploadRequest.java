@@ -1,7 +1,7 @@
 package com.contraflow.cms.aws.s3.dto;
 
 
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
