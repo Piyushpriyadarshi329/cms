@@ -2,6 +2,7 @@ package com.contraflow.cms.tenant.dto;
 
 import com.contraflow.cms.tenant.Enum.Role;
 import com.contraflow.cms.tenant.entity.Tenant;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +25,7 @@ public class TenantUserResponse {
 
     @ManyToOne
     @JoinColumn(name="tenant_id",nullable = false)
-    private Tenant tenant_id;
+    private Tenant tenant;
 
     @NotBlank
     @Column(nullable = false)

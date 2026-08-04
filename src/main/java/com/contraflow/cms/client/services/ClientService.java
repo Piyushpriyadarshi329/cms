@@ -16,8 +16,8 @@ public class ClientService {
     public final ClientRepository repository;
 
     // get client
-    public List<ClientResponse> getAllClients(){
-        return repository.findAll()
+    public List<ClientResponse> getAllClients(Long tenantId){
+        return repository.findBytenantId(tenantId)
                 .stream()
                 .map(client -> new ClientResponse(
                         client.getId(),

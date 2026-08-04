@@ -18,9 +18,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TenantUserRequest {
 
-    @ManyToOne
-    @JoinColumn(name="tenant_id",nullable = false)
-    private Long tenant_id;
 
     @NotBlank
     @Column(nullable = false)

@@ -36,6 +36,7 @@ public class TenantUser {
 
     @Email
     @NotBlank
+    @Column(unique = true)
     private String email;
 
     @NotBlank

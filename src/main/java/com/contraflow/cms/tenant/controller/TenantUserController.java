@@ -11,23 +11,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/tenant/user")
+@RequestMapping("/admin/tenant/{tenantId}/user")
 public class TenantUserController {
 
     @Autowired
     private TenantUserService tenantUserService;
 
     @GetMapping
-    public List<TenantUser> getAllTenants(){
+    public List<TenantUserResponse> getAllTenantUsers(){
         return tenantUserService.getAll();
     }
 
     @PostMapping
-    public TenantUserResponse createUser(@RequestBody TenantUserRequest request){
-        return tenantUserService.createUser(request);
+    public TenantUserResponse createUser(@PathVariable Long tenantId,@RequestBody TenantUserRequest request){
+        return tenantUserService.createUser(tenantId,request);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping
     public TenantUser updateService(@RequestBody TenantUserRequest request,@PathVariable Long id){
         return tenantUserService.updateUser(request,id);
     }

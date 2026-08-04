@@ -18,10 +18,10 @@ public class ClientController {
 
     private final ClientService service;
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients() {
+    @GetMapping("/tenant/{tenantId}")
+    public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients(@PathVariable Long tenantId) {
 
-        List<ClientResponse> clients = service.getAllClients();
+        List<ClientResponse> clients = service.getAllClients(tenantId);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Clients fetched successfully", clients)

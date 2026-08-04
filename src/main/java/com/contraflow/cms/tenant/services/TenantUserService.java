@@ -1,5 +1,6 @@
 package com.contraflow.cms.tenant.services;
 
+import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
 import com.contraflow.cms.tenant.dto.TenantUserResponse;
 import com.contraflow.cms.tenant.entity.Tenant;
@@ -21,12 +22,27 @@ public class TenantUserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<TenantUser>getAll(){
-        return tenantUserRepository.findAll();
+
+    public List<TenantUserResponse> getAll() {
+
+        return tenantUserRepository.findAll()
+                .stream()
+                .map(user -> TenantUserResponse.builder()
+                        .id(user.getId())
+                        .tenant(user.getTenantId())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .email(user.getEmail())
+                        .mobile(user.getMobile())
+                        .role(user.getRole())
+                        .created_at(user.getCreated_at())
+                        .last_login_at(user.getLast_login_at())
+                        .build())
+                .toList();
     }
 
-    public TenantUserResponse createUser(TenantUserRequest  request){
-        Tenant tenant = tenantRepository.findById(request.getTenant_id()).orElseThrow(()->new RuntimeException("No tenant Exists"));
+    public TenantUserResponse createUser(Long tenantId,   TenantUserRequest  request){
+        Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(()->new ResourceNotFoundException("No tenant Exists"));
         TenantUser tenantUser = TenantUser.builder()
                 .tenantId(tenant)
                 .firstName(request.getFirstName())
@@ -41,7 +57,7 @@ public class TenantUserService {
         TenantUser saved = tenantUserRepository.save(tenantUser);
         return TenantUserResponse.builder()
                 .id(saved.getId())
-                .tenant_id(saved.getTenantId())
+                .tenant(saved.getTenantId())
                 .firstName(saved.getFirstName())
                 .lastName(saved.getLastName())
                 .email(saved.getEmail())

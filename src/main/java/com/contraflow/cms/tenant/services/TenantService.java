@@ -5,6 +5,7 @@ import com.contraflow.cms.tenant.dto.TenantResponse;
 import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,10 +50,12 @@ public class TenantService {
                 .build();
     }
 
+
     public Tenant getTenantById(Long id){
         return tenantRepository.findById(id).orElseThrow(()-> new RuntimeException("Tenant not found"));
     }
 
+    @Cacheable(cacheNames = "tenant", key = "'all'")
     public List<Tenant> getAllTenants(){
         return tenantRepository.findAll();
     }
