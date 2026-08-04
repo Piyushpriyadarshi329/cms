@@ -16,7 +16,7 @@ public class ProposalDiscussionResponse {
     private UUID id;
     private UUID proposalId;
     private Long tenantUserId;
-    private Long clientContactId;
+    private Long clientUserId;
     private Date meetingDate;
     private String title;
     private String description;
