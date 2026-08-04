@@ -3,6 +3,7 @@ package com.contraflow.cms.security.jwt;
 
 
 import com.contraflow.cms.security.service.CustomUserDetailsService;
+import com.contraflow.cms.security.service.TenantUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final TenantUserDetailsService tenantUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -43,11 +45,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             final String username = jwtService.extractUsername(token);
+            final String userType = jwtService.extractUserType(token);
 
             if (username != null
                     && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // Load from the correct table based on the token's "type" claim.
+                // Falls back to admin for legacy tokens without a type claim.
+                UserDetails userDetails = "TENANT".equals(userType)
+                        ? tenantUserDetailsService.loadUserByUsername(username)
+                        : userDetailsService.loadUserByUsername(username);
 
                 if (!jwtService.isTokenExpired(token)) {
                     UsernamePasswordAuthenticationToken authToken =

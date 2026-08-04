@@ -24,7 +24,7 @@ public class TenantUser {
 
     @ManyToOne
     @JoinColumn(name="tenant_id",nullable = false,updatable = false)
-    private Tenant tenant_id;
+    private Tenant tenantId;
 
     @NotBlank
     @Column(nullable = false)

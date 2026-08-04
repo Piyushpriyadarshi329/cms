@@ -13,24 +13,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-private final AuthService authService;
+private final AdminAuthService adminAuthService;
+private final TenantAuthServices tenantAuthServices;
 
 
 @PostMapping("/register")
 public RegisterResponse register(@Valid @RequestBody RegisterRequest request){
 
-    return authService.register(request);
+    return adminAuthService.register(request);
 
 }
 
 
-@PostMapping("/login")
-public LoginResponse login(@RequestBody LoginRequest request){
-
-    return authService.login(request);
-
-
+@PostMapping("admin/login")
+public LoginResponse adminLogin(@RequestBody LoginRequest request){
+    return adminAuthService.login(request);
 }
+
+
+
+    @PostMapping("tenant/login")
+    public LoginResponse tenantLogin(@RequestBody LoginRequest request){
+        return tenantAuthServices.login(request);
+    }
 
 
 }

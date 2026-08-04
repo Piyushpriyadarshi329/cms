@@ -9,7 +9,6 @@ import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface TenantUserRepository  extends JpaRepository<TenantUser,Long> {
     List<TenantUser> findByTenantId(Long tenantId);
     boolean existsByEmail(String email);

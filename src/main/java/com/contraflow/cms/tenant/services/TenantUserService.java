@@ -7,6 +7,7 @@ import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,8 @@ public class TenantUserService {
     private TenantUserRepository tenantUserRepository;
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<TenantUser>getAll(){
         return tenantUserRepository.findAll();
@@ -25,12 +28,12 @@ public class TenantUserService {
     public TenantUserResponse createUser(TenantUserRequest  request){
         Tenant tenant = tenantRepository.findById(request.getTenant_id()).orElseThrow(()->new RuntimeException("No tenant Exists"));
         TenantUser tenantUser = TenantUser.builder()
-                .tenant_id(tenant)
+                .tenantId(tenant)
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .mobile(request.getMobile())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .created_at(request.getCreated_at())
                 .build();
@@ -38,7 +41,7 @@ public class TenantUserService {
         TenantUser saved = tenantUserRepository.save(tenantUser);
         return TenantUserResponse.builder()
                 .id(saved.getId())
-                .tenant_id(saved.getTenant_id())
+                .tenant_id(saved.getTenantId())
                 .firstName(saved.getFirstName())
                 .lastName(saved.getLastName())
                 .email(saved.getEmail())

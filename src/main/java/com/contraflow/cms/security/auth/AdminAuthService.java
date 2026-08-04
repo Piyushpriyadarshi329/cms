@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AdminAuthService {
 
 
     private final AuthenticationManager authenticationManager;
@@ -56,9 +56,12 @@ public class AuthService {
 );
 
 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-String token = jwtService.generateToken(userDetails);
+String token = jwtService.generateToken(userDetails, "ADMIN");
 
 return new LoginResponse(true, "Login Success", token);
 
     }
+
+
+
 }

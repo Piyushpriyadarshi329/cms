@@ -41,6 +41,26 @@ public class JwtService {
 
     }
 
+    // Token variant that records WHICH user type it belongs to (ADMIN / TENANT).
+    // The filter uses this "type" claim to load the user from the correct table.
+    public String generateToken(UserDetails userDetails, String userType) {
+
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claim("type", userType)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
+
+    }
+
+    public String extractUserType(String token) {
+
+        return extractClaim(token, claims -> claims.get("type", String.class));
+
+    }
+
 
     private Claims extractAllClaims(String token) {
 
