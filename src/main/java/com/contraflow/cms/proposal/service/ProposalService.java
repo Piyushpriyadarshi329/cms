@@ -1,11 +1,23 @@
 package com.contraflow.cms.proposal.service;
 
 
-import org.springframework.stereotype.Service;
-
-@Service
-public class ProposalService {
+import java.util.List;
+import java.util.UUID;
 
 
+import com.contraflow.cms.proposal.dto.ProposalRequest;
+import com.contraflow.cms.proposal.dto.ProposalResponse;
 
-}
+
+public interface ProposalService {
+    ProposalResponse createProposal(ProposalRequest request);
+
+    ProposalResponse getProposalById(UUID id);
+
+    List<ProposalResponse> getAllProposals();
+
+    ProposalResponse updateProposal(UUID id, ProposalRequest request);
+
+    void deleteProposal(UUID id);
+    
+} 

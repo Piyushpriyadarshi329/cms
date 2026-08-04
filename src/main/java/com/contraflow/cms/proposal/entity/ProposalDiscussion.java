@@ -2,10 +2,13 @@ package com.contraflow.cms.proposal.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.UUID;
+
+import com.contraflow.cms.tenant.entity.Tenant;
 
 @Entity
 @Data
@@ -14,27 +17,31 @@ public class ProposalDiscussion {
 
 @Id
 @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+private UUID id;
 
 
- @Column(name = "proposal_id")
-  private  UUID proposalId;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "proposal_id", nullable = false)
+private Proposal proposal;
 
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "tenant_user_id")
+private Tenant tenantUser;
 
-    @Column(name = "tenant_user_id")
-    private int tenantUserId;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "client_contact_id")
+// private ClientContact clientContact;
 
-    @Column(name ="client_contact_id" )
-    private int clientContactId;
+@Column(name = "meeting_date")
+private Date meetingDate;
 
+@NotBlank
+private String title;
 
-    @Column(name = "meeting_date")
-    private Date meetingDate;
+private String description;
 
+private String remarks;
 
-    private String title;
-    private String description;
-    private String Remarks;
-    private String requirement;
+private String requirement;
 
 }
