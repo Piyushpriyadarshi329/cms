@@ -29,15 +29,11 @@ public class ProposalRequest {
     private Long clientId;
 
 
-    private Long clientContactId;
-
-    
-
-    
+    private Long clientUserId;
 
     @NotNull(message = "Proposal start date is required")
     private Date proposalStartDate;
 
-
+ 
 
 }

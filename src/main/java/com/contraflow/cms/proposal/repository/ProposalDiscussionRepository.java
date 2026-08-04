@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface ProposalDiscussionRepository extends JpaRepository<ProposalDiscussion, UUID> {
     List<ProposalDiscussion> findByProposalId(UUID proposalId);
     List<ProposalDiscussion> findByTenantUserId(Long tenantUserId);
-    List<ProposalDiscussion> findByClientContactId(Long clientContactId);
-    
+    List<ProposalDiscussion> findByClientUserId(Long clientUserId);
+
 }

@@ -1,7 +1,6 @@
 package com.contraflow.cms.proposal.repository;
 
 import com.contraflow.cms.proposal.entity.Proposal;
-import com.contraflow.cms.proposal.entity.Proposal.proposalStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,5 +13,5 @@ public interface ProposalRepository  extends JpaRepository<Proposal, UUID> {
     List<Proposal> findByTenantId(Long tenantId);
     List<Proposal> findByClientId(Long clientId);
     Optional<Proposal> findByProposalNumber(String proposalNumber);
-    Optional<Proposal> findByProposalStatus(proposalStatus proposalStatus);
+    
 }

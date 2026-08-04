@@ -22,7 +22,10 @@ public class ProposalResponse {
     private String tenantName;
     private Long clientId;
     private String clientName;
-    private Long clientContactId;
+    private Long clientUserId;
     private Date proposalStartDate;
+
+
+
     
 }

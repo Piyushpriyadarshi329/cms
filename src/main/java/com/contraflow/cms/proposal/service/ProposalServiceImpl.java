@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.contraflow.cms.client.entity.Client;
+import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.client.repository.ClientRepository;
+import com.contraflow.cms.client.repository.ClientUserRepository;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
@@ -30,6 +32,9 @@ public class ProposalServiceImpl implements ProposalService{
     @Autowired
     private ClientRepository clientRepository;
 
+    @Autowired
+    private ClientUserRepository clientUserRepository;
+
     @Override
     public ProposalResponse createProposal(ProposalRequest request){
 
@@ -47,12 +52,12 @@ public class ProposalServiceImpl implements ProposalService{
         proposal.setProposalStartDate(request.getProposalStartDate());
         proposal.setProposalNumber(generateProposalNumber());
 
-        // if (request.getClientContactId() != null) {
-        //     ClientContact contact = clientContactRepository.findById(request.getClientContactId())
-        //             .orElseThrow(() -> new ResourceNotFoundException(
-        //                     "Client contact not found with id: " + request.getClientContactId()));
-        //     proposal.setClientContact(contact);
-        // }
+        if (request.getClientUserId() != null) {
+            ClientUser contact = clientUserRepository.findById(request.getClientUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Client contact not found with id: " + request.getClientUserId()));
+            proposal.setClientUser(contact);
+        }
 
         Proposal saved = proposalRepository.save(proposal);
         return mapToResponse(saved);
@@ -62,7 +67,7 @@ public class ProposalServiceImpl implements ProposalService{
     public ProposalResponse getProposalById(UUID id){
         Proposal proposal=proposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
         return mapToResponse(proposal);
-    }
+    } 
 
     @Override
     public List<ProposalResponse> getAllProposals() {
@@ -91,14 +96,14 @@ public class ProposalServiceImpl implements ProposalService{
         proposal.setClient(client);
         proposal.setProposalStartDate(request.getProposalStartDate());
 
-        // if (request.getClientContactId() != null) {
-        //     ClientContact contact = clientContactRepository.findById(request.getClientContactId())
-        //             .orElseThrow(() -> new ResourceNotFoundException(
-        //                     "Client contact not found with id: " + request.getClientContactId()));
-        //     proposal.setClientContact(contact);
-        // } else {
-        //     proposal.setClientContact(null);
-        // }
+        if (request.getClientUserId() != null) {
+            ClientUser contact = clientUserRepository.findById(request.getClientUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Client contact not found with id: " + request.getClientUserId()));
+            proposal.setClientUser(contact);
+        } else {
+            proposal.setClientUser(null);
+        }
 
         Proposal updated = proposalRepository.save(proposal);
         return mapToResponse(updated);
@@ -128,7 +133,7 @@ public class ProposalServiceImpl implements ProposalService{
                 .tenantName(proposal.getTenant().getName())
                 .clientId(proposal.getClient().getId())
                 .clientName(proposal.getClient().getName())
-                // .clientContactId(proposal.getClientContact() != null ? proposal.getClientContact().getId() : null)
+                .clientUserId(proposal.getClientUser() != null ? proposal.getClientUser().getId() : null)
                 .proposalStartDate(proposal.getProposalStartDate())
                 .build();
     }

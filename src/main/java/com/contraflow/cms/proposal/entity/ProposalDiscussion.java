@@ -8,7 +8,9 @@ import lombok.Data;
 import java.util.Date;
 import java.util.UUID;
 
+import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.tenant.entity.Tenant;
+import com.contraflow.cms.tenant.entity.TenantUser;
 
 @Entity
 @Data
@@ -26,11 +28,11 @@ private Proposal proposal;
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "tenant_user_id")
-private Tenant tenantUser;
+private TenantUser tenantUser;
 
 @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "client_contact_id")
-// private ClientContact clientContact;
+@JoinColumn(name = "client_user_id")
+private ClientUser clientUser;
 
 @Column(name = "meeting_date")
 private Date meetingDate;
@@ -43,5 +45,15 @@ private String description;
 private String remarks;
 
 private String requirement;
+
+
+
+
+
+    
+
+    
+
+    
 
 }

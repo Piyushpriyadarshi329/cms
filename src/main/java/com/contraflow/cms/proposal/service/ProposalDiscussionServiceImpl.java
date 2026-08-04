@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.contraflow.cms.client.entity.ClientUser;
+import com.contraflow.cms.client.repository.ClientUserRepository;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionRequest;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
@@ -29,9 +31,8 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
     @Autowired
     private TenantUserRepository tenantUserRepository;
 
-    // @Autowired
-    // private ClientContactRepository clientContactRepository;
-
+    @Autowired
+    private ClientUserRepository clientUserRepository;
 
     @Override
     public ProposalDiscussionResponse addDiscussion(ProposalDiscussionRequest request) {
@@ -46,19 +47,19 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
 
         ProposalDiscussion discussion = new ProposalDiscussion();
         discussion.setProposal(proposal);
-        // discussion.setTenantUser(tenantUser);
+        discussion.setTenantUser(tenantUser);
         discussion.setMeetingDate(request.getMeetingDate());
         discussion.setTitle(request.getTitle());
         discussion.setDescription(request.getDescription());
         discussion.setRemarks(request.getRemarks());
         discussion.setRequirement(request.getRequirement());
 
-        // if (request.getClientContactId() != null) {
-        //     ClientContact contact = clientContactRepository.findById(request.getClientContactId())
-        //             .orElseThrow(() -> new ResourceNotFoundException(
-        //                     "Client contact not found with id: " + request.getClientContactId()));
-        //     discussion.setClientContact(contact);
-        // }
+        if (request.getClientUserId() != null) {
+            ClientUser contact = clientUserRepository.findById(request.getClientUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Client user not found with id: " + request.getClientUserId()));
+            discussion.setClientUser(contact);
+        }
 
         ProposalDiscussion saved = proposalDiscussionRepository.save(discussion);
         return mapToResponse(saved);
@@ -77,8 +78,8 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
         response.setId(discussion.getId());
         response.setProposalId(discussion.getProposal().getId());
         response.setTenantUserId(discussion.getTenantUser().getId());
-        // response.setClientContactId(
-                // discussion.getClientContact() != null ? discussion.getClientContact().getId() : null);
+        response.setClientUserId(
+                discussion.getClientUser() != null ? discussion.getClientUser().getId() : null);
         response.setMeetingDate(discussion.getMeetingDate());
         response.setTitle(discussion.getTitle());
         response.setDescription(discussion.getDescription());

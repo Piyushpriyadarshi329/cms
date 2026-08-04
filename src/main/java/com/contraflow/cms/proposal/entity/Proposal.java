@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.contraflow.cms.client.entity.Client;
+import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.tenant.entity.Tenant;
 
 @Entity
@@ -38,17 +39,18 @@ public class Proposal {
     
 
     @Enumerated(EnumType.STRING)
-    private proposalStatus status;
+    @Column(name = "status")
+    private ProposalStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="client_contact_id" )
-    // private ClientContact clientContactId;
+    @JoinColumn(name ="client_user_id" )
+    private ClientUser clientUser;
 
 
     @Column(name ="proposal_start_date" )
     private Date proposalStartDate;
 
-    public enum proposalStatus { DRAFT, SENT, ACCEPTED, REJECTED};
+    public enum ProposalStatus { DRAFT, SENT, ACCEPTED, REJECTED};
 
 }
 
