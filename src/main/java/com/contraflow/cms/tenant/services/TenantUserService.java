@@ -3,6 +3,7 @@ package com.contraflow.cms.tenant.services;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
 import com.contraflow.cms.tenant.dto.TenantUserResponse;
+import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantRepository;
@@ -66,6 +67,12 @@ public class TenantUserService {
                 .created_at(saved.getCreated_at())
                 .last_login_at(saved.getLast_login_at())
                 .build();
+    }
+
+    public ThemeConfig getMyTheme(String email){
+        TenantUser tenantUser = tenantUserRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Tenant user not found"));
+        return tenantUser.getTenantId().getThemeConfig();
     }
 
     public TenantUser updateUser(TenantUserRequest request,Long id){

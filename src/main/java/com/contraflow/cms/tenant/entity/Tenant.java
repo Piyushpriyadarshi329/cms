@@ -1,12 +1,15 @@
 package com.contraflow.cms.tenant.entity;
 
 
+import com.contraflow.cms.tenant.dto.ThemeConfig;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @NoArgsConstructor
@@ -60,4 +63,8 @@ public class Tenant {
 
     @NotNull
     private Boolean verified;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private ThemeConfig themeConfig;
 }

@@ -2,6 +2,8 @@ package com.contraflow.cms.tenant.services;
 
 import com.contraflow.cms.tenant.dto.TenantRequest;
 import com.contraflow.cms.tenant.dto.TenantResponse;
+import com.contraflow.cms.tenant.dto.TenantThemeRequest;
+import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,5 +80,45 @@ public class TenantService {
     public void deleteTenant(Long id){
         Tenant tenant = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
         tenantRepository.delete(tenant);
+    }
+
+    public ThemeConfig updateTheme(Long id, TenantThemeRequest request){
+        Tenant tenant = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
+
+        ThemeConfig config = tenant.getThemeConfig();
+        if (config == null) {
+            config = new ThemeConfig();
+        }
+
+        if (request.getTheme() != null) config.setTheme(request.getTheme());
+        if (request.getPrimaryColor() != null) config.setPrimaryColor(request.getPrimaryColor());
+        if (request.getFont() != null) config.setFont(request.getFont());
+        if (request.getAppLogo() != null) config.setAppLogo(request.getAppLogo());
+
+        if (request.getLoginHeader() != null || request.getLoginMessage() != null) {
+            ThemeConfig.Login login = config.getLogin() != null ? config.getLogin() : new ThemeConfig.Login();
+            if (request.getLoginHeader() != null) login.setHeader(request.getLoginHeader());
+            if (request.getLoginMessage() != null) login.setMessage(request.getLoginMessage());
+            config.setLogin(login);
+        }
+
+        boolean sidebarChanged = request.getSidebarColor() != null || request.getSidebarTextColor() != null
+                || request.getSidebarActiveTextColor() != null || request.getSidebarLogoUrl() != null
+                || request.getSidebarMiniLogoUrl() != null || request.getSidebarAccordion() != null;
+
+        if (sidebarChanged) {
+            ThemeConfig.Sidebar sidebar = config.getSidebar() != null ? config.getSidebar() : new ThemeConfig.Sidebar();
+            if (request.getSidebarColor() != null) sidebar.setColor(request.getSidebarColor());
+            if (request.getSidebarTextColor() != null) sidebar.setTextColor(request.getSidebarTextColor());
+            if (request.getSidebarActiveTextColor() != null) sidebar.setActiveTextColor(request.getSidebarActiveTextColor());
+            if (request.getSidebarLogoUrl() != null) sidebar.setLogoUrl(request.getSidebarLogoUrl());
+            if (request.getSidebarMiniLogoUrl() != null) sidebar.setMiniLogoUrl(request.getSidebarMiniLogoUrl());
+            if (request.getSidebarAccordion() != null) sidebar.setAccordion(request.getSidebarAccordion());
+            config.setSidebar(sidebar);
+        }
+
+        tenant.setThemeConfig(config);
+        Tenant saved = tenantRepository.save(tenant);
+        return saved.getThemeConfig();
     }
 }
