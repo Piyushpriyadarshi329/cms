@@ -13,11 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClientService {
 
-    public final ClientRepository repository;
+    public final ClientRepository clientRepository;
 
     // get client
     public List<ClientResponse> getAllClients(Long tenantId){
-        return repository.findBytenantId(tenantId)
+        return clientRepository.findBytenantId(tenantId)
                 .stream()
                 .map(client -> new ClientResponse(
                         client.getId(),
@@ -40,9 +40,9 @@ public class ClientService {
     }
 
     // create
-    public ClientResponse createClient(ClientRequest request){
+    public ClientResponse  createClient(Long tenantId, ClientRequest request){
         Client client = Client.builder()
-                .tenantId(request.getTenantId())
+                .tenantId(tenantId)
                 .name(request.getName())
                 .email(request.getEmail())
                 .mobile(request.getMobile())
@@ -55,7 +55,7 @@ public class ClientService {
                 .pincode(request.getPincode())
                 .build();
 
-        Client savedClient = repository.save(client);
+        Client savedClient = clientRepository.save(client);
 
         return new ClientResponse(
                 savedClient.getId(),
@@ -77,12 +77,12 @@ public class ClientService {
 
 
     // Update Client
-    public ClientResponse updateClient(Long id, ClientRequest request) {
+    public ClientResponse updateClient(Long id,Long tenantId, ClientRequest request) {
 
-        Client client = repository.findById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found with id : " + id));
 
-        client.setTenantId(request.getTenantId());
+        client.setTenantId(tenantId);
         client.setName(request.getName());
         client.setEmail(request.getEmail());
         client.setMobile(request.getMobile());
@@ -94,7 +94,7 @@ public class ClientService {
         client.setCountry(request.getCountry());
         client.setPincode(request.getPincode());
 
-        Client updatedClient = repository.save(client);
+        Client updatedClient = clientRepository.save(client);
 
         return new ClientResponse(
                 updatedClient.getId(),
@@ -117,10 +117,10 @@ public class ClientService {
     // Delete Client
     public String deleteClient(Long id) {
 
-        Client client = repository.findById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found with id : " + id));
 
-        repository.delete(client);
+        clientRepository.delete(client);
 
         return "Client deleted successfully.";
     }
@@ -128,7 +128,7 @@ public class ClientService {
     // Get Client By Id
     public ClientResponse getClientById(Long id) {
 
-        Client client = repository.findById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found with id : " + id));
 
         return new ClientResponse(

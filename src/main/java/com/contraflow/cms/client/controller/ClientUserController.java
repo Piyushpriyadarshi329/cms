@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/client")
 @RequiredArgsConstructor
 public class ClientUserController {
-    private ClientUserService service;
+    private final ClientUserService service;
 
-    @GetMapping("/client/{clientId}")
+    @GetMapping("/{clientId}/user")
     public ResponseEntity<ApiResponse<List<ClientUserResponse>>> getAllClientUsers(@PathVariable Long clientId){
 
         List<ClientUserResponse> users = service.getClientUsers(clientId);
@@ -29,7 +29,7 @@ public class ClientUserController {
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/{clientId}/user/{id}")
     public ResponseEntity<ApiResponse<ClientUserResponse>> getUserById(@PathVariable Long id){
         ClientUserResponse user = service.getClientUserById(id);
 
@@ -39,27 +39,27 @@ public class ClientUserController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@RequestBody ClientUserRequest request){
+    @PostMapping("/{clientId}/user")
+    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@PathVariable Long clientId, @RequestBody ClientUserRequest request){
 
-        ClientUserResponse user = service.createClientUser(request);
+        ClientUserResponse user = service.createClientUser(clientId,request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("user created successfully", user));
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ClientUserResponse>> updateClientUser(@PathVariable Long id, @RequestBody ClientUserRequest request){
+    @PutMapping("/{clientId}/user/{id}")
+    public ResponseEntity<ApiResponse<ClientUserResponse>> updateClientUser(@PathVariable Long id,@PathVariable Long clientId,   @RequestBody ClientUserRequest request){
 
-        ClientUserResponse user = service.updateClientUser(id, request);
+        ClientUserResponse user = service.updateClientUser(id,clientId, request);
 
         return ResponseEntity.ok(
                 ApiResponse.success("User updated successfully", user)
         );
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{clientId}/user/{id}")
     public ResponseEntity<ApiResponse<String>> deleteClientUser(@PathVariable Long id){
         service.deleteClientUser(id);
 

@@ -11,7 +11,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ClientUserRequest {
-    private Long clientId;
 
     @NotBlank
     private String firstname;

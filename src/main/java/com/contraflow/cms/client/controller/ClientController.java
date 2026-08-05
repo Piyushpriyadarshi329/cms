@@ -12,13 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/client")
 @RequiredArgsConstructor
 public class ClientController {
 
     private final ClientService service;
 
-    @GetMapping("/tenant/{tenantId}")
+    @GetMapping("/tenant/{tenantId}/client")
     public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients(@PathVariable Long tenantId) {
 
         List<ClientResponse> clients = service.getAllClients(tenantId);
@@ -28,7 +27,7 @@ public class ClientController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("client/{id}")
     public ResponseEntity<ApiResponse<ClientResponse>> getClientById(
             @PathVariable Long id) {
 
@@ -39,29 +38,30 @@ public class ClientController {
         );
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<ClientResponse>> createClient(
+    @PostMapping("/tenant/{tenantId}/client")
+    public ResponseEntity<ApiResponse<ClientResponse>> createClient(@PathVariable Long tenantId,
             @RequestBody ClientRequest request) {
 
-        ClientResponse client = service.createClient(request);
+        ClientResponse client = service.createClient(tenantId,request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Client created successfully", client));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/tenant/{tenantId}/client/{id}")
     public ResponseEntity<ApiResponse<ClientResponse>> updateClient(
             @PathVariable Long id,
+            @PathVariable Long tenantId,
             @RequestBody ClientRequest request) {
 
-        ClientResponse client = service.updateClient(id, request);
+        ClientResponse client = service.updateClient(id, tenantId,request);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Client updated successfully", client)
         );
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("client/{id}")
     public ResponseEntity<ApiResponse<String>> deleteClient(
             @PathVariable Long id) {
 

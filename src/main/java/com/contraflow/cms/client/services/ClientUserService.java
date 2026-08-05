@@ -30,9 +30,9 @@ public class ClientUserService {
     }
 
     // create
-    public ClientUserResponse createClientUser(ClientUserRequest request){
+    public ClientUserResponse createClientUser(Long clientId, ClientUserRequest request){
         ClientUser clientUser = ClientUser.builder()
-                .clientId(request.getClientId())
+                .clientId(clientId)
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
                 .email(request.getEmail())
@@ -53,11 +53,11 @@ public class ClientUserService {
     }
 
     // update client user
-    public ClientUserResponse updateClientUser(Long id, ClientUserRequest request){
+    public ClientUserResponse updateClientUser(Long id, Long clientId, ClientUserRequest request){
         ClientUser clientUser = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client User not found with id : " + id));
 
-        clientUser.setClientId(request.getClientId());
+        clientUser.setClientId(clientId);
         clientUser.setFirstName(request.getFirstname());
         clientUser.setLastName(request.getLastname());
         clientUser.setEmail(request.getEmail());
