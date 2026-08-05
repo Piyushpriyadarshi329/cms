@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()   // <-- NOT "/api/v1/auth/**"
+                        .requestMatchers("/health").permitAll()    // public liveness check (Railway healthcheck)
                         // Swagger / OpenAPI docs — public (paths are relative to the /api/v1 servlet path)
                         .requestMatchers(
                                 "/swagger-ui/**",
