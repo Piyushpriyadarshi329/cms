@@ -40,5 +40,7 @@ public class ClientUser {
     @Column(nullable = false,unique = true)
     private String email;
 
-    private Boolean active;
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean active = true;
 }
