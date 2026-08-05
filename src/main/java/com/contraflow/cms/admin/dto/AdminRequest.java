@@ -1,4 +1,4 @@
-package com.contraflow.cms.admin.dto.admin;
+package com.contraflow.cms.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

@@ -24,8 +24,5 @@ public class ProposalResponse {
     private String clientName;
     private Long clientUserId;
     private Date proposalStartDate;
-
-
-
-    
+    private ProposalDiscussionResponse proposalDiscussion;
 }

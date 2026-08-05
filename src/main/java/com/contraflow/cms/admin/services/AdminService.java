@@ -1,8 +1,8 @@
 package com.contraflow.cms.admin.services;
 
 
-import com.contraflow.cms.admin.dto.admin.AdminRequest;
-import com.contraflow.cms.admin.dto.admin.AdminResponse;
+import com.contraflow.cms.admin.dto.AdminRequest;
+import com.contraflow.cms.admin.dto.AdminResponse;
 import com.contraflow.cms.admin.entity.Admin;
 import com.contraflow.cms.admin.repository.AdminRepository;
 import org.springframework.cache.annotation.CacheEvict;
