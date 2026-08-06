@@ -11,6 +11,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class TenantAuthServices {
@@ -37,9 +40,33 @@ public class TenantAuthServices {
                 .roles(tenantUser.getRole() != null ? tenantUser.getRole().name() : "TENANT")
                 .build();
 
-        String token = jwtService.generateToken(userDetails, "TENANT");
+        String role = tenantUser.getRole() != null ? tenantUser.getRole().name() : "TENANT";
+        Long tenantId = tenantUser.getTenantId() != null ? tenantUser.getTenantId().getId() : null;
 
-        return new LoginResponse(true, "Login Success", token);
+        // Embed user details in the token so the backend can parse them later
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "TENANT");
+        claims.put("userId", tenantUser.getId());
+        claims.put("firstName", tenantUser.getFirstName());
+        claims.put("lastName", tenantUser.getLastName());
+        claims.put("role", role);
+        if (tenantId != null) claims.put("tenantId", tenantId);
+
+        String token = jwtService.generateToken(userDetails, claims);
+
+        return LoginResponse.builder()
+                .success(true)
+                .massage("Login Success")
+                .token(token)
+                .user(LoginResponse.UserInfo.builder()
+                        .id(tenantUser.getId())
+                        .firstName(tenantUser.getFirstName())
+                        .lastName(tenantUser.getLastName())
+                        .email(tenantUser.getEmail())
+                        .role(role)
+                        .tenantId(tenantId)
+                        .build())
+                .build();
 
     }
 

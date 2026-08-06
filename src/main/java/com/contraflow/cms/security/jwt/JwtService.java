@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.JwtBuilder;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 import java.util.function.Function;
 
 @Service
@@ -55,10 +58,48 @@ public class JwtService {
 
     }
 
+    // Token that embeds arbitrary user details (userId, firstName, role, tenantId, ...)
+    // as claims, so the backend can read the current user straight from the token.
+    public String generateToken(UserDetails userDetails, Map<String, Object> extraClaims) {
+
+        JwtBuilder builder = Jwts.builder()
+                .subject(userDetails.getUsername());        // sub = email
+
+        if (extraClaims != null) {
+            extraClaims.forEach(builder::claim);
+        }
+
+        return builder
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     public String extractUserType(String token) {
 
         return extractClaim(token, claims -> claims.get("type", String.class));
 
+    }
+
+    // ----- convenience extractors so callers can parse user details from the token -----
+
+    public Long extractUserId(String token) {
+        Object v = extractClaim(token, claims -> claims.get("userId"));
+        return (v instanceof Number n) ? n.longValue() : null;
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public Long extractTenantId(String token) {
+        Object v = extractClaim(token, claims -> claims.get("tenantId"));
+        return (v instanceof Number n) ? n.longValue() : null;
+    }
+
+    public String extractFirstName(String token) {
+        return extractClaim(token, claims -> claims.get("firstName", String.class));
     }
 
 

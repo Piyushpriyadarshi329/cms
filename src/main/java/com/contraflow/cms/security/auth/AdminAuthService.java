@@ -12,6 +12,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AdminAuthService {
@@ -48,18 +51,40 @@ public class AdminAuthService {
 
 
     public LoginResponse login(LoginRequest request){
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-        )
-);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-String token = jwtService.generateToken(userDetails, "ADMIN");
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-return new LoginResponse(true, "Login Success", token);
+        Admin admin = adminRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
+        // Embed user details in the token so the backend can parse them later
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "ADMIN");
+        claims.put("userId", admin.getId());
+        claims.put("firstName", admin.getFirstName());
+        claims.put("lastName", admin.getLastName());
+        claims.put("role", "ADMIN");
+
+        String token = jwtService.generateToken(userDetails, claims);
+
+        return LoginResponse.builder()
+                .success(true)
+                .massage("Login Success")
+                .token(token)
+                .user(LoginResponse.UserInfo.builder()
+                        .id(admin.getId())
+                        .firstName(admin.getFirstName())
+                        .lastName(admin.getLastName())
+                        .email(admin.getEmail())
+                        .role("ADMIN")
+                        .build())
+                .build();
     }
 
 
