@@ -34,16 +34,17 @@ public class TenantAuthServices {
             throw new BadCredentialsException("Invalid email or password");
         }
 
-        UserDetails userDetails = User.builder()
-                .username(tenantUser.getEmail())
-                .password(tenantUser.getPassword())
-                .roles(tenantUser.getRole() != null ? tenantUser.getRole().name() : "TENANT")
-                .build();
+        return buildLoginResponse(tenantUser);
+    }
+
+    // Builds access + refresh tokens and the response for a tenant user.
+    // Reused by both login and the refresh-token flow.
+    public LoginResponse buildLoginResponse(TenantUser tenantUser) {
 
         String role = tenantUser.getRole() != null ? tenantUser.getRole().name() : "TENANT";
         Long tenantId = tenantUser.getTenantId() != null ? tenantUser.getTenantId().getId() : null;
 
-        // Embed user details in the token so the backend can parse them later
+        // Embed user details in the access token so the backend can parse them later
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "TENANT");
         claims.put("userId", tenantUser.getId());
@@ -52,12 +53,13 @@ public class TenantAuthServices {
         claims.put("role", role);
         if (tenantId != null) claims.put("tenantId", tenantId);
 
-        String token = jwtService.generateToken(userDetails, claims);
+        String accessToken = jwtService.generateAccessToken(tenantUser.getEmail(), claims);
+        String refreshToken = jwtService.generateRefreshToken(tenantUser.getEmail(), "TENANT");
 
         return LoginResponse.builder()
                 .success(true)
-                .massage("Login Success")
-                .token(token)
+                .message(("Login Success")).token(accessToken)
+                .refreshToken(refreshToken)
                 .user(LoginResponse.UserInfo.builder()
                         .id(tenantUser.getId())
                         .firstName(tenantUser.getFirstName())

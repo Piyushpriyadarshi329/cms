@@ -6,6 +6,8 @@ import com.contraflow.cms.tenant.dto.TenantThemeRequest;
 import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
+import com.contraflow.cms.kafka.EmailType;
+import com.contraflow.cms.kafka.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,9 @@ public class TenantService {
 
     @Autowired
     private TenantRepository tenantRepository;
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     public TenantResponse createTenant(TenantRequest request) {
 
@@ -36,7 +41,7 @@ public class TenantService {
 
         Tenant savedTenant = tenantRepository.save(tenant);
 
-        return TenantResponse.builder()
+        TenantResponse response = TenantResponse.builder()
                 .id(savedTenant.getId())
                 .name(savedTenant.getName())
                 .legalName(savedTenant.getLegalName())
@@ -50,6 +55,11 @@ public class TenantService {
                 .country(savedTenant.getCountry())
                 .verified(savedTenant.getVerified())
                 .build();
+
+        // publish to the "emails" topic (key = TENANT_CREATED) after the tenant is saved
+        kafkaProducerService.sendEmail(EmailType.TENANT_CREATED, response);
+
+        return response;
     }
 
 

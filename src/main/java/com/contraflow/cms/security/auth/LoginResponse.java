@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginResponse {
     private boolean success;
-    private String massage;
-    private String token;
+    private String message;
+    private String token;          // access token
+    private String refreshToken;   // long-lived refresh token
     private UserInfo user;
 
     @Data

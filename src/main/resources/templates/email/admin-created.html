@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html th:replace="~{email/layout :: layout('Admin account created', ~{::#content})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div id="content">
+    <p>Hi <span th:text="${name} ?: 'Admin'">Admin</span>,</p>
+    <p>Your <strong>admin account</strong> has been created.</p>
+  </div>
+</body>
+</html>

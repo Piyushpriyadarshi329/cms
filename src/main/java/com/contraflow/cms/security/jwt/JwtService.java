@@ -25,6 +25,9 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    @Value("${jwt.refresh-expiration:2592000000}")
+    private long refreshExpiration;
+
     private SecretKey getSigningKey() {
 
         return Keys.hmacShaKeyFor(
@@ -74,6 +77,35 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    // Access token: subject (email) + user-detail claims, short-lived.
+    public String generateAccessToken(String subject, Map<String, Object> claims) {
+        JwtBuilder builder = Jwts.builder().subject(subject);
+        if (claims != null) {
+            claims.forEach(builder::claim);
+        }
+        return builder
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    // Refresh token: minimal (subject + type), marked tokenType=refresh, long-lived.
+    public String generateRefreshToken(String subject, String userType) {
+        return Jwts.builder()
+                .subject(subject)
+                .claim("type", userType)
+                .claim("tokenType", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public boolean isRefreshToken(String token) {
+        return "refresh".equals(extractClaim(token, claims -> claims.get("tokenType", String.class)));
     }
 
     public String extractUserType(String token) {

@@ -22,7 +22,7 @@ public class TenantController {
 
     @PostMapping
     public TenantResponse createTenant(@Valid @RequestBody TenantRequest tenantRequest){
-        return  tenantService.createTenant(tenantRequest);
+        return tenantService.createTenant(tenantRequest);
     }
 
     @GetMapping

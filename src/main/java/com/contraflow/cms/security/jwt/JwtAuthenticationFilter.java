@@ -44,29 +44,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
 
         try {
-            final String username = jwtService.extractUsername(token);
-            final String userType = jwtService.extractUserType(token);
+            // Only ACCESS tokens authenticate for resource access. A refresh token is skipped
+            // here (so it can't be used on protected endpoints); it's only accepted at /auth/refresh.
+            if (!jwtService.isRefreshToken(token)) {
 
-            if (username != null
-                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+                final String username = jwtService.extractUsername(token);
+                final String userType = jwtService.extractUserType(token);
 
-                // Load from the correct table based on the token's "type" claim.
-                // Falls back to admin for legacy tokens without a type claim.
-                UserDetails userDetails = "TENANT".equals(userType)
-                        ? tenantUserDetailsService.loadUserByUsername(username)
-                        : userDetailsService.loadUserByUsername(username);
+                if (username != null
+                        && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                if (!jwtService.isTokenExpired(token)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities());
+                    // Load from the correct table based on the token's "type" claim.
+                    // Falls back to admin for legacy tokens without a type claim.
+                    UserDetails userDetails = "TENANT".equals(userType)
+                            ? tenantUserDetailsService.loadUserByUsername(username)
+                            : userDetailsService.loadUserByUsername(username);
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request));
+                    if (!jwtService.isTokenExpired(token)) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities());
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                        authToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
         } catch (Exception e) {

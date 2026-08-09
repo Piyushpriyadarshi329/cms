@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html th:replace="~{email/layout :: layout('Welcome aboard 🎉', ~{::#content})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div id="content">
+    <p>Hi <span th:text="${name} ?: 'there'">there</span>,</p>
+    <p>Your <strong>tenant account</strong> on ContraFlow CMS has been created successfully.</p>
+    <p>You can now sign in and start configuring your workspace.</p>
+  </div>
+</body>
+</html>

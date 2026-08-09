@@ -58,12 +58,17 @@ public class AdminAuthService {
                 )
         );
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
         Admin admin = adminRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        // Embed user details in the token so the backend can parse them later
+        return buildLoginResponse(admin);
+    }
+
+    // Builds access + refresh tokens and the response for an admin.
+    // Reused by both login and the refresh-token flow.
+    public LoginResponse buildLoginResponse(Admin admin) {
+
+        // Embed user details in the access token so the backend can parse them later
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "ADMIN");
         claims.put("userId", admin.getId());
@@ -71,12 +76,14 @@ public class AdminAuthService {
         claims.put("lastName", admin.getLastName());
         claims.put("role", "ADMIN");
 
-        String token = jwtService.generateToken(userDetails, claims);
+        String accessToken = jwtService.generateAccessToken(admin.getEmail(), claims);
+        String refreshToken = jwtService.generateRefreshToken(admin.getEmail(), "ADMIN");
 
         return LoginResponse.builder()
                 .success(true)
-                .massage("Login Success")
-                .token(token)
+                .message("Login Success")
+                .token(accessToken)
+                .refreshToken(refreshToken)
                 .user(LoginResponse.UserInfo.builder()
                         .id(admin.getId())
                         .firstName(admin.getFirstName())

@@ -15,6 +15,7 @@ public class AuthController {
 
 private final AdminAuthService adminAuthService;
 private final TenantAuthServices tenantAuthServices;
+private final RefreshTokenService refreshTokenService;
 
 
 @PostMapping("/register")
@@ -35,6 +36,12 @@ public LoginResponse adminLogin(@RequestBody LoginRequest request){
     @PostMapping("tenant/login")
     public LoginResponse tenantLogin(@RequestBody LoginRequest request){
         return tenantAuthServices.login(request);
+    }
+
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@RequestBody RefreshTokenRequest request){
+        return refreshTokenService.refresh(request.getRefreshToken());
     }
 
 

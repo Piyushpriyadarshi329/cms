@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html th:replace="~{email/layout :: layout('New proposal', ~{::#content})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div id="content">
+    <p>A new proposal has been created<span th:if="${title}">: <strong th:text="${title}">Title</strong></span>.</p>
+  </div>
+</body>
+</html>
