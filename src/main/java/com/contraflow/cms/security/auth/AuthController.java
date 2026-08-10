@@ -39,6 +39,15 @@ public LoginResponse adminLogin(@RequestBody LoginRequest request){
     }
 
 
+
+    @PostMapping("admin/logout")
+    public String adminLogout(){
+
+
+    return "logout Successfully";
+    }
+
+
     @PostMapping("/refresh")
     public LoginResponse refresh(@RequestBody RefreshTokenRequest request){
         return refreshTokenService.refresh(request.getRefreshToken());

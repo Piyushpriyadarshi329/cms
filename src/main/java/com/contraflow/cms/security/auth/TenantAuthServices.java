@@ -4,35 +4,48 @@ package com.contraflow.cms.security.auth;
 import com.contraflow.cms.security.jwt.JwtService;
 import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class TenantAuthServices {
 
 
     private final TenantUserRepository tenantUserRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager tenantAuthenticationManager;
+
+    // Explicit constructor so we can @Qualifier the tenant AuthenticationManager
+    // (the admin one is @Primary, so unqualified injection would pick the wrong bean).
+    public TenantAuthServices(TenantUserRepository tenantUserRepository,
+                              JwtService jwtService,
+                              @Qualifier("tenantAuthenticationManager") AuthenticationManager tenantAuthenticationManager) {
+        this.tenantUserRepository = tenantUserRepository;
+        this.jwtService = jwtService;
+        this.tenantAuthenticationManager = tenantAuthenticationManager;
+    }
 
 
     public LoginResponse login(LoginRequest request){
 
-        // Authenticate against the tenant_user table (NOT admins)
+        // Authenticate against the tenant_user table via the tenant AuthenticationManager.
+        // Throws BadCredentialsException on wrong email/password.
+        tenantAuthenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        // Password verified — load the tenant user to build the token/response.
         TenantUser tenantUser = tenantUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(request.getPassword(), tenantUser.getPassword())) {
-            throw new BadCredentialsException("Invalid email or password");
-        }
 
         return buildLoginResponse(tenantUser);
     }

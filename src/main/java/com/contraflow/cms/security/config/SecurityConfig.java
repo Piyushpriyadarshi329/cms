@@ -3,9 +3,11 @@ package com.contraflow.cms.security.config;
 
 import com.contraflow.cms.security.jwt.JwtAuthenticationFilter;
 import com.contraflow.cms.security.service.CustomUserDetailsService;
+import com.contraflow.cms.security.service.TenantUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -80,12 +82,23 @@ public PasswordEncoder passwordEncoder(){
 
 
 @Bean
+@Primary
 public AuthenticationManager authenticationManager(CustomUserDetailsService customUserDetailsService,
                                                    PasswordEncoder passwordEncoder){
     // Build an explicit ProviderManager for the ADMIN UserDetailsService.
     // (Using AuthenticationConfiguration.getAuthenticationManager() with MORE THAN ONE
     // UserDetailsService bean produces a manager that delegates to itself -> StackOverflow.)
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+    provider.setPasswordEncoder(passwordEncoder);
+    return new ProviderManager(provider);
+}
+
+
+@Bean
+public AuthenticationManager tenantAuthenticationManager(TenantUserDetailsService tenantUserDetailsService,
+                                                         PasswordEncoder passwordEncoder){
+    // Separate manager bound to the TENANT UserDetailsService (tenant_user table).
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(tenantUserDetailsService);
     provider.setPasswordEncoder(passwordEncoder);
     return new ProviderManager(provider);
 }
