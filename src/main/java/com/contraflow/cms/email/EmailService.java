@@ -1,4 +1,4 @@
-package com.contraflow.cms.kafka;
+package com.contraflow.cms.email;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

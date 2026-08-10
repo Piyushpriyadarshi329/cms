@@ -3,7 +3,7 @@ package com.contraflow.cms.contract.entity;
 public enum ContractStatus {
 
     // Contract created
-    DRAFT,
+
 
     // Internal Approval Flow
     MANAGER_APPROVAL_PENDING,
@@ -13,7 +13,7 @@ public enum ContractStatus {
     LEGAL_APPROVAL_PENDING,
 
     // All approvals completed
-    APPROVED,
+
 
     // E-Sign Process
     ESIGN_PENDING,

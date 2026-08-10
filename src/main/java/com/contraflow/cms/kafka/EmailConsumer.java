@@ -1,5 +1,6 @@
 package com.contraflow.cms.kafka;
 
+import com.contraflow.cms.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;

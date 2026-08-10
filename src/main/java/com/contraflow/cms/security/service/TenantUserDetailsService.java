@@ -2,6 +2,7 @@ package com.contraflow.cms.security.service;
 
 import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +16,12 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
+@Data
 public class TenantUserDetailsService implements UserDetailsService {
 
     private final TenantUserRepository tenantUserRepository;
+
+    public long tenantId;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

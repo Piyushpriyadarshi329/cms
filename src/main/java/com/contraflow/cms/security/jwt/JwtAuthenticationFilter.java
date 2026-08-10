@@ -2,6 +2,7 @@ package com.contraflow.cms.security.jwt;
 
 
 
+import com.contraflow.cms.security.AuthUser;
 import com.contraflow.cms.security.service.CustomUserDetailsService;
 import com.contraflow.cms.security.service.TenantUserDetailsService;
 import jakarta.servlet.FilterChain;
