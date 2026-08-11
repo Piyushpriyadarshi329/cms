@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -80,8 +81,11 @@ public class JwtService {
     }
 
     // Access token: subject (email) + user-detail claims, short-lived.
+    // Gets a unique "jti" (token id) so it can be blacklisted on logout without storing the whole token.
     public String generateAccessToken(String subject, Map<String, Object> claims) {
-        JwtBuilder builder = Jwts.builder().subject(subject);
+        JwtBuilder builder = Jwts.builder()
+                .id(UUID.randomUUID().toString())   // jti
+                .subject(subject);
         if (claims != null) {
             claims.forEach(builder::claim);
         }
@@ -90,6 +94,11 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    // The token's unique id (jti) — used as the Redis blacklist key on logout.
+    public String extractJti(String token) {
+        return extractClaim(token, Claims::getId);
     }
 
     // Refresh token: minimal (subject + type), marked tokenType=refresh, long-lived.
@@ -124,17 +133,13 @@ public class JwtService {
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
-
     public Long extractTenantId(String token) {
         Object v = extractClaim(token, claims -> claims.get("tenantId"));
         return (v instanceof Number n) ? n.longValue() : null;
     }
-
     public String extractFirstName(String token) {
         return extractClaim(token, claims -> claims.get("firstName", String.class));
     }
-
-
     private Claims extractAllClaims(String token) {
 
         return Jwts
@@ -179,6 +184,11 @@ public class JwtService {
                 .before(new Date());
 
     }
+    public long getRemainingExpirationTime(String token) {
 
+        Date expiration = extractExpiration(token);
+
+        return expiration.getTime() - System.currentTimeMillis();
+    }
 
 }

@@ -4,22 +4,27 @@ import com.contraflow.cms.admin.dto.ApiResponse;
 import com.contraflow.cms.client.dto.ClientRequest;
 import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.services.ClientService;
+import com.contraflow.cms.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/tenant")
 public class ClientController {
 
     private final ClientService service;
 
-    @GetMapping("/tenant/{tenantId}/client")
-    public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients(@PathVariable Long tenantId) {
+    @GetMapping("/client")
+    public ResponseEntity<ApiResponse<List<ClientResponse>>> getAllClients(
+            @AuthenticationPrincipal AuthUser authUser) {
 
+        Long tenantId = authUser.getTenantId();   // from the JWT, not the URL
         List<ClientResponse> clients = service.getAllClients(tenantId);
 
         return ResponseEntity.ok(
@@ -27,41 +32,42 @@ public class ClientController {
         );
     }
 
-    @GetMapping("client/{id}")
+    @GetMapping("/client/{id}")
     public ResponseEntity<ApiResponse<ClientResponse>> getClientById(
-            @PathVariable Long id) {
-
-        ClientResponse client = service.getClientById(id);
+            @PathVariable Long id,  @AuthenticationPrincipal AuthUser authUser ) {
+            Long tenantId = authUser.getTenantId();   // from the JWT, not the URL
+        ClientResponse client = service.getClientById(tenantId,id);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Client fetched successfully", client)
         );
     }
 
-    @PostMapping("/tenant/{tenantId}/client")
-    public ResponseEntity<ApiResponse<ClientResponse>> createClient(@PathVariable Long tenantId,
+    @PostMapping("/client")
+    public ResponseEntity<ApiResponse<ClientResponse>> createClient(
+            @AuthenticationPrincipal AuthUser authUser,
             @RequestBody ClientRequest request) {
 
-        ClientResponse client = service.createClient(tenantId,request);
+        ClientResponse client = service.createClient(authUser.getTenantId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Client created successfully", client));
     }
 
-    @PutMapping("/tenant/{tenantId}/client/{id}")
+    @PutMapping("/client/{id}")
     public ResponseEntity<ApiResponse<ClientResponse>> updateClient(
+            @AuthenticationPrincipal AuthUser principal,
             @PathVariable Long id,
-            @PathVariable Long tenantId,
             @RequestBody ClientRequest request) {
 
-        ClientResponse client = service.updateClient(id, tenantId,request);
+        ClientResponse client = service.updateClient(id, principal.getTenantId(), request);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Client updated successfully", client)
         );
     }
 
-    @DeleteMapping("client/{id}")
+    @DeleteMapping("/client/{id}")
     public ResponseEntity<ApiResponse<String>> deleteClient(
             @PathVariable Long id) {
 

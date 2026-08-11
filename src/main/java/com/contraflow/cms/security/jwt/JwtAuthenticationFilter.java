@@ -3,29 +3,32 @@ package com.contraflow.cms.security.jwt;
 
 
 import com.contraflow.cms.security.AuthUser;
-import com.contraflow.cms.security.service.CustomUserDetailsService;
-import com.contraflow.cms.security.service.TenantUserDetailsService;
 import jakarta.servlet.FilterChain;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
-    private final TenantUserDetailsService tenantUserDetailsService;
+    private final StringRedisTemplate redisTemplate;
+
+
 
     @Override
     protected void doFilterInternal(
@@ -43,36 +46,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
-
         try {
             // Only ACCESS tokens authenticate for resource access. A refresh token is skipped
             // here (so it can't be used on protected endpoints); it's only accepted at /auth/refresh.
             if (!jwtService.isRefreshToken(token)) {
 
                 final String username = jwtService.extractUsername(token);
-                final String userType = jwtService.extractUserType(token);
+                final String jti = jwtService.extractJti(token);
 
-                if (username != null
-                        && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Reject tokens whose jti was blacklisted at logout
+                boolean blacklisted = jti != null
+                        && Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:jwt:" + jti));
 
-                    // Load from the correct table based on the token's "type" claim.
-                    // Falls back to admin for legacy tokens without a type claim.
-                    UserDetails userDetails = "TENANT".equals(userType)
-                            ? tenantUserDetailsService.loadUserByUsername(username)
-                            : userDetailsService.loadUserByUsername(username);
+                if (!blacklisted
+                        && username != null
+                        && SecurityContextHolder.getContext().getAuthentication() == null
+                        && !jwtService.isTokenExpired(token)) {
 
-                    if (!jwtService.isTokenExpired(token)) {
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails,
-                                        null,
-                                        userDetails.getAuthorities());
+                    // Build the principal straight from the JWT claims — no DB lookup.
+                    String role = jwtService.extractRole(token);
+                    List<GrantedAuthority> authorities = role != null
+                            ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                            : Collections.emptyList();
 
-                        authToken.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request));
+                    AuthUser principal = new AuthUser(
+                            username,
+                            jwtService.extractUserId(token),
+                            jwtService.extractTenantId(token),
+                            jwtService.extractUserType(token),
+                            authorities);
 
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    principal,
+                                    null,
+                                    authorities);
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {

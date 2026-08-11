@@ -5,24 +5,25 @@ import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.dto.ClientUserRequest;
 import com.contraflow.cms.client.dto.ClientUserResponse;
 import com.contraflow.cms.client.services.ClientUserService;
+import com.contraflow.cms.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/client")
+@RequestMapping("tenant/client")
 @RequiredArgsConstructor
 public class ClientUserController {
     private final ClientUserService service;
 
     @GetMapping("/{clientId}/user")
-    public ResponseEntity<ApiResponse<List<ClientUserResponse>>> getAllClientUsers(@PathVariable Long clientId){
-
-        List<ClientUserResponse> users = service.getClientUsers(clientId);
-
+    public ResponseEntity<ApiResponse<List<ClientUserResponse>>> getAllClientUsers(@PathVariable Long clientId , @AuthenticationPrincipal AuthUser authUser){
+        Long tenantId = authUser.getTenantId();
+        List<ClientUserResponse> users = service.getClientUsers(tenantId,clientId);
         return ResponseEntity.ok(
                 ApiResponse.success("client's user fetched successfully", users)
         );
@@ -40,9 +41,9 @@ public class ClientUserController {
 
 
     @PostMapping("/{clientId}/user")
-    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@PathVariable Long clientId, @RequestBody ClientUserRequest request){
-
-        ClientUserResponse user = service.createClientUser(clientId,request);
+    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@PathVariable Long clientId, @RequestBody ClientUserRequest request, @AuthenticationPrincipal AuthUser authUser){
+        Long tenantId = authUser.getTenantId();
+        ClientUserResponse user = service.createClientUser(tenantId,clientId,request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("user created successfully", user));

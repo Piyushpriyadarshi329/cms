@@ -126,26 +126,31 @@ public class ClientService {
     }
 
     // Get Client By Id
-    public ClientResponse getClientById(Long id) {
+    public ClientResponse getClientById(Long tenantId, Long id) {
 
-        Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Client not found with id : " + id));
+        List<ClientResponse> clients = clientRepository
+                .findByIdAndTenantId(tenantId, id)
+                .stream()
+                .map(client -> new ClientResponse(
+                        client.getId(),
+                        client.getTenantId(),
+                        client.getName(),
+                        client.getEmail(),
+                        client.getMobile(),
+                        client.getPan(),
+                        client.getGst(),
+                        client.getAddress(),
+                        client.getCity(),
+                        client.getState(),
+                        client.getCountry(),
+                        client.getPincode(),
+                        client.getCreatedAt(),
+                        client.getUpdatedAt()
+                ))
+                .toList();
 
-        return new ClientResponse(
-                client.getId(),
-                client.getTenantId(),
-                client.getName(),
-                client.getEmail(),
-                client.getMobile(),
-                client.getPan(),
-                client.getGst(),
-                client.getAddress(),
-                client.getCity(),
-                client.getState(),
-                client.getCountry(),
-                client.getPincode(),
-                client.getCreatedAt(),
-                client.getUpdatedAt()
-        );
+        return clients.isEmpty() ? null : clients.get(0);
     }
+
+
 }

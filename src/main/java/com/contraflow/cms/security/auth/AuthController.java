@@ -1,12 +1,16 @@
 package com.contraflow.cms.security.auth;
 
 
+import com.contraflow.cms.security.jwt.JwtService;
+import com.contraflow.cms.security.jwt.TokenBlacklistService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth")
@@ -16,6 +20,9 @@ public class AuthController {
 private final AdminAuthService adminAuthService;
 private final TenantAuthServices tenantAuthServices;
 private final RefreshTokenService refreshTokenService;
+private final JwtService jwtService;
+private final StringRedisTemplate redisTemplate;
+private final TokenBlacklistService tokenBlacklistService;
 
 
 @PostMapping("/register")
@@ -41,10 +48,32 @@ public LoginResponse adminLogin(@RequestBody LoginRequest request){
 
 
     @PostMapping("admin/logout")
-    public String adminLogout(){
+    public ResponseEntity<String> adminLogout(HttpServletRequest request) {
 
+        String header = request.getHeader("Authorization");
 
-    return "logout Successfully";
+        // Must be present AND start with "Bearer " before we strip it
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token missing");
+        }
+
+        String token = header.substring(7);
+
+        String jti;
+        long remainingTime;
+        try {
+            jti = jwtService.extractJti(token);
+            remainingTime = jwtService.getRemainingExpirationTime(token);
+        } catch (Exception e) {
+            // token wasn't a valid JWT -> nothing to blacklist
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
+
+        // Blacklist by jti (short id), not the whole token. Only if not already expired.
+        if (jti != null && remainingTime > 0) {
+            tokenBlacklistService.blacklistToken(jti,remainingTime);
+        }
+        return ResponseEntity.ok("Logout Successfully");
     }
 
 
@@ -52,6 +81,4 @@ public LoginResponse adminLogin(@RequestBody LoginRequest request){
     public LoginResponse refresh(@RequestBody RefreshTokenRequest request){
         return refreshTokenService.refresh(request.getRefreshToken());
     }
-
-
 }

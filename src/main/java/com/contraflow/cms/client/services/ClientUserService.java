@@ -15,8 +15,10 @@ public class ClientUserService {
 
     public final ClientUserRepository repository;
 
-    public List<ClientUserResponse> getClientUsers(Long clientId){
-        return repository.findByClientId(clientId)
+    public List<ClientUserResponse> getClientUsers(Long tenantId,  Long clientId){
+
+        System.out.println("t"+tenantId+"C"+clientId);
+        return repository.findByTenantIdAndClientId(tenantId, clientId)
                 .stream()
                 .map(user -> new ClientUserResponse(
                         user.getId(),
@@ -30,13 +32,14 @@ public class ClientUserService {
     }
 
     // create
-    public ClientUserResponse createClientUser(Long clientId, ClientUserRequest request){
+    public ClientUserResponse createClientUser(Long tenantId, Long clientId, ClientUserRequest request){
         ClientUser clientUser = ClientUser.builder()
                 .clientId(clientId)
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
                 .email(request.getEmail())
                 .mobile(request.getMobile())
+                .tenantId(tenantId)
                 .build();
 
         ClientUser savedClientUser = repository.save(clientUser);
