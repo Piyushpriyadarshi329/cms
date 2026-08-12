@@ -26,7 +26,8 @@ public class EmailConsumer {
 
     private final EmailService emailService;
 
-    @KafkaListener(topics = KafkaProducerService.EMAILS_TOPIC, groupId = "email-service")
+    @KafkaListener(topics = KafkaProducerService.EMAILS_TOPIC, groupId = "email-service",
+            autoStartup = "${app.kafka.enabled:true}")
     public void consume(ConsumerRecord<String, Object> record, Acknowledgment ack) {
 
         String key = record.key();
