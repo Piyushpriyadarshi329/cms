@@ -1,5 +1,7 @@
 package com.contraflow.cms.tenant.services;
 
+import com.contraflow.cms.exception.DuplicateResourceException;
+import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantRequest;
 import com.contraflow.cms.tenant.dto.TenantResponse;
 import com.contraflow.cms.tenant.dto.TenantThemeRequest;
@@ -25,6 +27,13 @@ public class TenantService {
 
     public TenantResponse createTenant(TenantRequest request) {
 
+        if (tenantRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Tenant with email " + request.getEmail() + " already exists");
+        }
+        if (tenantRepository.existsByMobile(request.getMobile())) {
+            throw new DuplicateResourceException("Tenant with mobile " + request.getMobile() + " already exists");
+        }
+
         Tenant tenant = Tenant.builder()
                 .name(request.getName())
                 .legalName(request.getLegalName())
@@ -41,20 +50,7 @@ public class TenantService {
 
         Tenant savedTenant = tenantRepository.save(tenant);
 
-        TenantResponse response = TenantResponse.builder()
-                .id(savedTenant.getId())
-                .name(savedTenant.getName())
-                .legalName(savedTenant.getLegalName())
-                .logoUrl(savedTenant.getLogoUrl())
-                .mobile(savedTenant.getMobile())
-                .email(savedTenant.getEmail())
-                .address(savedTenant.getAddress())
-                .state(savedTenant.getState())
-                .city(savedTenant.getCity())
-                .pinCode(savedTenant.getPinCode())
-                .country(savedTenant.getCountry())
-                .verified(savedTenant.getVerified())
-                .build();
+        TenantResponse response = toResponse(savedTenant);
 
         // publish to the "emails" topic (key = TENANT_CREATED) after the tenant is saved
         kafkaProducerService.sendEmail(EmailType.TENANT_CREATED, response);
@@ -63,17 +59,22 @@ public class TenantService {
     }
 
 
-    public Tenant getTenantById(Long id){
-        return tenantRepository.findById(id).orElseThrow(()-> new RuntimeException("Tenant not found"));
+    public TenantResponse getTenantById(Long id){
+        Tenant tenant = tenantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
+        return toResponse(tenant);
     }
 
     @Cacheable(cacheNames = "tenant", key = "'all'")
-    public List<Tenant> getAllTenants(){
-        return tenantRepository.findAll();
+    public List<TenantResponse> getAllTenants(){
+        return tenantRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Tenant updateTenant(TenantRequest request, Long id){
-        Tenant tenant1 = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
+    public TenantResponse updateTenant(TenantRequest request, Long id){
+        Tenant tenant1 = tenantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
         tenant1.setName(request.getName());
         tenant1.setLegalName(request.getLegalName());
         tenant1.setEmail(request.getEmail());
@@ -84,16 +85,18 @@ public class TenantService {
         tenant1.setState(request.getState());
         tenant1.setPinCode(request.getPinCode());
         tenant1.setCountry(request.getCountry());
-        return tenantRepository.save(tenant1);
+        return toResponse(tenantRepository.save(tenant1));
     }
 
     public void deleteTenant(Long id){
-        Tenant tenant = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
+        Tenant tenant = tenantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
         tenantRepository.delete(tenant);
     }
 
     public ThemeConfig updateTheme(Long id, TenantThemeRequest request){
-        Tenant tenant = tenantRepository.findById(id).orElseThrow(()->new RuntimeException("Tenant Not found"));
+        Tenant tenant = tenantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
 
         ThemeConfig config = tenant.getThemeConfig();
         if (config == null) {
@@ -130,5 +133,22 @@ public class TenantService {
         tenant.setThemeConfig(config);
         Tenant saved = tenantRepository.save(tenant);
         return saved.getThemeConfig();
+    }
+
+    private TenantResponse toResponse(Tenant tenant){
+        return TenantResponse.builder()
+                .id(tenant.getId())
+                .name(tenant.getName())
+                .legalName(tenant.getLegalName())
+                .logoUrl(tenant.getLogoUrl())
+                .mobile(tenant.getMobile())
+                .email(tenant.getEmail())
+                .address(tenant.getAddress())
+                .state(tenant.getState())
+                .city(tenant.getCity())
+                .pinCode(tenant.getPinCode())
+                .country(tenant.getCountry())
+                .verified(tenant.getVerified())
+                .build();
     }
 }

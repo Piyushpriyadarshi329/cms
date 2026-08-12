@@ -1,13 +1,15 @@
 package com.contraflow.cms.tenant.controller;
 
+import com.contraflow.cms.admin.dto.ApiResponse;
 import com.contraflow.cms.tenant.dto.TenantRequest;
 import com.contraflow.cms.tenant.dto.TenantResponse;
 import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.dto.TenantThemeRequest;
-import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.services.TenantService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,32 +23,39 @@ public class TenantController {
 
 
     @PostMapping
-    public TenantResponse createTenant(@Valid @RequestBody TenantRequest tenantRequest){
-        return tenantService.createTenant(tenantRequest);
+    public ResponseEntity<ApiResponse<TenantResponse>> createTenant(@Valid @RequestBody TenantRequest tenantRequest){
+        TenantResponse created = tenantService.createTenant(tenantRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tenant created successfully", created));
     }
 
     @GetMapping
-    public List<Tenant> getAllTenants() {
-        return tenantService.getAllTenants();
+    public ResponseEntity<ApiResponse<List<TenantResponse>>> getAllTenants() {
+        List<TenantResponse> tenants = tenantService.getAllTenants();
+        return ResponseEntity.ok(ApiResponse.success("Tenants fetched successfully", tenants));
     }
 
     @GetMapping("/{id}")
-    public Tenant getTenantById(@PathVariable Long id){
-        return tenantService.getTenantById(id);
+    public ResponseEntity<ApiResponse<TenantResponse>> getTenantById(@PathVariable Long id){
+        TenantResponse tenant = tenantService.getTenantById(id);
+        return ResponseEntity.ok(ApiResponse.success("Tenant fetched successfully", tenant));
     }
 
     @PutMapping("/{id}")
-    public Tenant updateTenant(@Valid @RequestBody TenantRequest tenantRequest,@PathVariable Long id){
-        return tenantService.updateTenant(tenantRequest,id);
+    public ResponseEntity<ApiResponse<TenantResponse>> updateTenant(@Valid @RequestBody TenantRequest tenantRequest, @PathVariable Long id){
+        TenantResponse updated = tenantService.updateTenant(tenantRequest, id);
+        return ResponseEntity.ok(ApiResponse.success("Tenant updated successfully", updated));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTenant(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<Void>> deleteTenant(@PathVariable Long id){
         tenantService.deleteTenant(id);
+        return ResponseEntity.ok(ApiResponse.success("Tenant deleted successfully", null));
     }
 
     @PatchMapping("/{id}/theme")
-    public ThemeConfig updateTheme(@RequestBody TenantThemeRequest request, @PathVariable Long id){
-        return tenantService.updateTheme(id, request);
+    public ResponseEntity<ApiResponse<ThemeConfig>> updateTheme(@RequestBody TenantThemeRequest request, @PathVariable Long id){
+        ThemeConfig updated = tenantService.updateTheme(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Tenant theme updated successfully", updated));
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TenantUserRepository  extends JpaRepository<TenantUser,Long> {
-    List<TenantUser> findByTenantId(Long tenantId);
+    List<TenantUser> findByTenantId_Id(Long tenantId);
     boolean existsByEmail(String email);
     Optional<TenantUser>findByEmail(String email);
 

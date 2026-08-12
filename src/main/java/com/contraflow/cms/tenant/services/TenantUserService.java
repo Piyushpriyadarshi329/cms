@@ -1,5 +1,6 @@
 package com.contraflow.cms.tenant.services;
 
+import com.contraflow.cms.exception.DuplicateResourceException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
 import com.contraflow.cms.tenant.dto.TenantUserResponse;
@@ -24,26 +25,24 @@ public class TenantUserService {
     private PasswordEncoder passwordEncoder;
 
 
-    public List<TenantUserResponse> getAll() {
+    public List<TenantUserResponse> getAll(Long tenantId) {
+        if (!tenantRepository.existsById(tenantId)) {
+            throw new ResourceNotFoundException("Tenant not found with id : " + tenantId);
+        }
 
-        return tenantUserRepository.findAll()
+        return tenantUserRepository.findByTenantId_Id(tenantId)
                 .stream()
-                .map(user -> TenantUserResponse.builder()
-                        .id(user.getId())
-                        .tenant(user.getTenantId())
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .email(user.getEmail())
-                        .mobile(user.getMobile())
-                        .role(user.getRole())
-                        .created_at(user.getCreated_at())
-                        .last_login_at(user.getLast_login_at())
-                        .build())
+                .map(this::toResponse)
                 .toList();
     }
 
     public TenantUserResponse createUser(Long tenantId,   TenantUserRequest  request){
         Tenant tenant = tenantRepository.findById(tenantId).orElseThrow(()->new ResourceNotFoundException("No tenant Exists"));
+
+        if (tenantUserRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Tenant user with email " + request.getEmail() + " already exists");
+        }
+
         TenantUser tenantUser = TenantUser.builder()
                 .tenantId(tenant)
                 .firstName(request.getFirstName())
@@ -56,35 +55,43 @@ public class TenantUserService {
                 .build();
 
         TenantUser saved = tenantUserRepository.save(tenantUser);
-        return TenantUserResponse.builder()
-                .id(saved.getId())
-                .tenant(saved.getTenantId())
-                .firstName(saved.getFirstName())
-                .lastName(saved.getLastName())
-                .email(saved.getEmail())
-                .mobile(saved.getMobile())
-                .role(saved.getRole())
-                .created_at(saved.getCreated_at())
-                .last_login_at(saved.getLast_login_at())
-                .build();
+        return toResponse(saved);
     }
 
     public ThemeConfig getMyTheme(String email){
         TenantUser tenantUser = tenantUserRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Tenant user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant user not found with email : " + email));
         return tenantUser.getTenantId().getThemeConfig();
     }
 
-    public TenantUser updateUser(TenantUserRequest request,Long id){
-        TenantUser tenantUser = tenantUserRepository.findById(id).orElseThrow(()->new RuntimeException("No member Found"));
+    public TenantUserResponse updateUser(Long tenantId, Long id, TenantUserRequest request){
+        TenantUser tenantUser = tenantUserRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tenant user not found with id : " + id));
+
+        if (!tenantUser.getTenantId().getId().equals(tenantId)) {
+            throw new ResourceNotFoundException("Tenant user not found with id : " + id);
+        }
+
         tenantUser.setFirstName(request.getFirstName());
         tenantUser.setLastName(request.getLastName());
         tenantUser.setEmail(request.getEmail());
         tenantUser.setMobile(request.getMobile());
         tenantUser.setRole(request.getRole());
-        return tenantUserRepository.save(tenantUser);
+        return toResponse(tenantUserRepository.save(tenantUser));
     }
 
-
+    private TenantUserResponse toResponse(TenantUser user){
+        return TenantUserResponse.builder()
+                .id(user.getId())
+                .tenant(user.getTenantId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .mobile(user.getMobile())
+                .role(user.getRole())
+                .created_at(user.getCreated_at())
+                .last_login_at(user.getLast_login_at())
+                .build();
+    }
 
 }
