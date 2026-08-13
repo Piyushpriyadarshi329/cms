@@ -30,6 +30,11 @@ private Proposal proposal;
 @JoinColumn(name = "tenant_user_id")
 private TenantUser tenantUser;
 
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "tenant_id")
+private Tenant tenant;
+
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "client_user_id")
 private ClientUser clientUser;

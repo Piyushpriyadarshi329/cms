@@ -9,7 +9,7 @@ import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 
 public interface ProposalDiscussionService {
 
-    ProposalDiscussionResponse addDiscussion(ProposalDiscussionRequest request);
+    ProposalDiscussionResponse addDiscussion(Long tenantId, ProposalDiscussionRequest request);
 
     List<ProposalDiscussionResponse> getDiscussionsByProposalId(UUID proposalId);
 

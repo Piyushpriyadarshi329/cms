@@ -17,10 +17,10 @@ public class ProposalDiscussionRequest {
     @NotNull(message = "Proposal id is required")
     private UUID proposalId;
 
-    @NotNull(message = "Tenant user id is required")
-    private Long tenantUserId;
 
     private Long clientUserId;
+    private Long tenantUserId;
+
 
     @NotNull(message = "Meeting date is required")
     private java.util.Date meetingDate;

@@ -1,8 +1,10 @@
 package com.contraflow.cms.proposal.dto;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import com.contraflow.cms.proposal.entity.ProposalDiscussion;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +26,5 @@ public class ProposalResponse {
     private String clientName;
     private Long clientUserId;
     private Date proposalStartDate;
-    private ProposalDiscussionResponse proposalDiscussion;
+    private List<ProposalDiscussion> proposalDiscussion;
 }

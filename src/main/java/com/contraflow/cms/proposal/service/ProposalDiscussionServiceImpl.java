@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.contraflow.cms.tenant.entity.Tenant;
+import com.contraflow.cms.tenant.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +36,11 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
     @Autowired
     private ClientUserRepository clientUserRepository;
 
+    @Autowired
+    private TenantRepository tenantRepository;
+
     @Override
-    public ProposalDiscussionResponse addDiscussion(ProposalDiscussionRequest request) {
+    public ProposalDiscussionResponse addDiscussion(Long tenantId, ProposalDiscussionRequest request) {
 
         Proposal proposal = proposalRepository.findById(request.getProposalId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -45,6 +50,10 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Tenant user not found with id: " + request.getTenantUserId()));
 
+        Tenant tenant = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Tenant not found with id: " + tenantId));
+
         ProposalDiscussion discussion = new ProposalDiscussion();
         discussion.setProposal(proposal);
         discussion.setTenantUser(tenantUser);
@@ -53,6 +62,7 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
         discussion.setDescription(request.getDescription());
         discussion.setRemarks(request.getRemarks());
         discussion.setRequirement(request.getRequirement());
+        discussion.setTenant(tenant);
 
         if (request.getClientUserId() != null) {
             ClientUser contact = clientUserRepository.findById(request.getClientUserId())

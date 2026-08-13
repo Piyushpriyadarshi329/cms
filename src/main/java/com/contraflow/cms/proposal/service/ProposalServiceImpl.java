@@ -6,8 +6,10 @@ import java.util.UUID;
 
 import java.util.stream.Collectors;
 
+import com.contraflow.cms.proposal.repository.ProposalDiscussionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.contraflow.cms.client.entity.Client;
 import com.contraflow.cms.client.entity.ClientUser;
@@ -34,11 +36,13 @@ public class ProposalServiceImpl implements ProposalService{
 
     @Autowired
     private ClientUserRepository clientUserRepository;
+    @Autowired
+    private ProposalDiscussionRepository proposalDiscussionRepository;
 
     @Override
-    public ProposalResponse createProposal(ProposalRequest request){
+    public ProposalResponse createProposal(Long tenantId, ProposalRequest request){
 
-        Tenant tenant=tenantRepository.findById(request.getTenantId()).orElseThrow(()-> new ResourceNotFoundException(
+        Tenant tenant=tenantRepository.findById(tenantId).orElseThrow(()-> new ResourceNotFoundException(
             "Tenant not found with id: " + request.getTenantId()));
 
         Client client=clientRepository.findById(request.getClientId()).orElseThrow(() -> new ResourceNotFoundException(
@@ -64,14 +68,16 @@ public class ProposalServiceImpl implements ProposalService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProposalResponse getProposalById(UUID id){
         Proposal proposal=proposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
         return mapToResponse(proposal);
-    } 
+    }
 
     @Override
-    public List<ProposalResponse> getAllProposals() {
-        return proposalRepository.findAll()
+    @Transactional(readOnly = true)
+    public List<ProposalResponse> getAllProposals( Long tenantId) {
+        return proposalRepository.findByTenantId(tenantId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -135,6 +141,7 @@ public class ProposalServiceImpl implements ProposalService{
                 .clientName(proposal.getClient().getName())
                 .clientUserId(proposal.getClientUser() != null ? proposal.getClientUser().getId() : null)
                 .proposalStartDate(proposal.getProposalStartDate())
+                .proposalDiscussion(proposalDiscussionRepository.findByProposalId(proposal.getId()))
                 .build();
     }
     

@@ -10,11 +10,11 @@ import com.contraflow.cms.proposal.dto.ProposalResponse;
 
 
 public interface ProposalService {
-    ProposalResponse createProposal(ProposalRequest request);
+    ProposalResponse createProposal(Long tenantId, ProposalRequest request);
 
     ProposalResponse getProposalById(UUID id);
 
-    List<ProposalResponse> getAllProposals();
+    List<ProposalResponse> getAllProposals( Long tenantId);
 
     ProposalResponse updateProposal(UUID id, ProposalRequest request);
 
