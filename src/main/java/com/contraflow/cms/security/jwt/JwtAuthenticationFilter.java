@@ -4,7 +4,6 @@ package com.contraflow.cms.security.jwt;
 
 import com.contraflow.cms.security.AuthUser;
 import jakarta.servlet.FilterChain;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +25,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final StringRedisTemplate redisTemplate;
+    private final TokenBlacklistService tokenBlacklistService;
 
 
 
@@ -54,9 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 final String username = jwtService.extractUsername(token);
                 final String jti = jwtService.extractJti(token);
 
-                // Reject tokens whose jti was blacklisted at logout
-                boolean blacklisted = jti != null
-                        && Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:jwt:" + jti));
+                // Reject tokens whose jti was blacklisted at logout.
+                // The service fails OPEN: if Redis is down it returns false rather than
+                // blocking every request (revocation just won't work while Redis is down).
+                boolean blacklisted = jti != null && tokenBlacklistService.isBlacklisted(jti);
 
                 if (!blacklisted
                         && username != null
