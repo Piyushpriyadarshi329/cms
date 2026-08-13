@@ -48,6 +48,10 @@ public class TenantUser {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean not null default false")
+    private boolean deleted = false;
+
     @Column(nullable = false,updatable = false)
     private LocalDateTime created_at;
 

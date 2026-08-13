@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -28,7 +29,6 @@ public class Tenant {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String legalName;
 
     private String logoUrl;
@@ -64,7 +64,19 @@ public class Tenant {
     @NotNull
     private Boolean verified;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean not null default false")
+    private boolean deleted = false;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private ThemeConfig themeConfig;
+
+    @Column(nullable = true,updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist(){
+        createdAt = LocalDateTime.now();
+    }
 }

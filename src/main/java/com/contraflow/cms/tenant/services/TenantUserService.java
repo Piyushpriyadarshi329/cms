@@ -30,7 +30,7 @@ public class TenantUserService {
             throw new ResourceNotFoundException("Tenant not found with id : " + tenantId);
         }
 
-        return tenantUserRepository.findByTenantId_Id(tenantId)
+        return tenantUserRepository.findByTenantId_IdAndDeletedFalse(tenantId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -78,6 +78,20 @@ public class TenantUserService {
         tenantUser.setMobile(request.getMobile());
         tenantUser.setRole(request.getRole());
         return toResponse(tenantUserRepository.save(tenantUser));
+    }
+
+    public void deleteUser(Long tenantId, Long id) {
+        TenantUser tenantUser = tenantUserRepository
+                .findByTenantId_IdAndIdAndDeletedFalse(tenantId, id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Tenant user not found with id : " + id
+                        )
+                );
+
+        tenantUser.setDeleted(true);
+
+        tenantUserRepository.save(tenantUser);
     }
 
     private TenantUserResponse toResponse(TenantUser user){

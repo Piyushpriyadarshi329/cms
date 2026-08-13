@@ -5,6 +5,7 @@ import com.contraflow.cms.admin.dto.AdminRequest;
 import com.contraflow.cms.admin.dto.AdminResponse;
 import com.contraflow.cms.admin.entity.Admin;
 import com.contraflow.cms.admin.repository.AdminRepository;
+import com.contraflow.cms.exception.ResourceNotFoundException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,18 +31,16 @@ public class AdminService {
     public List<AdminResponse> getAllAdmin(){
         System.out.println("Fetching from DB...");
 
-
-        return adminRepository.findAll().stream()
+        return adminRepository.findAllByDeletedFalse().stream()
                 .map(admin -> new AdminResponse(
                         admin.getId(),
                         admin.getFirstName(),
                         admin.getLastName(),
-                        admin.getEmail()))
+                        admin.getEmail(),
+                        admin.getCreatedAt()
+                ))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
-
-
-
 
 
     @CacheEvict(value = "admin", allEntries = true)
@@ -52,6 +51,23 @@ public class AdminService {
          admin.setEmail(adminRequest.getEmail());
          admin.setPassword(passwordEncoder.encode(adminRequest.getPassword()));
         Admin saved = adminRepository.save(admin);
-        return new AdminResponse(saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail());
+        return mapToResponse(saved);
     }
+
+    private AdminResponse mapToResponse(Admin admin) {
+        return new AdminResponse(
+                admin.getId(),
+                admin.getFirstName(),
+                admin.getLastName(),
+                admin.getEmail(),
+                admin.getCreatedAt()
+        );
+    }
+
+    public void deleteAdmin(Long id){
+        Admin admin = adminRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        admin.setDeleted(true);
+        adminRepository.save(admin);
+    }
+
 }
