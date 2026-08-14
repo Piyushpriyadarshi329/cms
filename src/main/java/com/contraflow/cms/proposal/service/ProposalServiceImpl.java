@@ -16,6 +16,7 @@ import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.client.repository.ClientRepository;
 import com.contraflow.cms.client.repository.ClientUserRepository;
 import com.contraflow.cms.exception.ResourceNotFoundException;
+import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
 import com.contraflow.cms.proposal.entity.Proposal;
@@ -141,8 +142,26 @@ public class ProposalServiceImpl implements ProposalService{
                 .clientName(proposal.getClient().getName())
                 .clientUserId(proposal.getClientUser() != null ? proposal.getClientUser().getId() : null)
                 .proposalStartDate(proposal.getProposalStartDate())
-                .proposalDiscussion(proposalDiscussionRepository.findByProposalId(proposal.getId()))
+                .proposalDiscussion(mapDiscussions(proposal.getId()))
                 .build();
     }
-    
+
+    private List<ProposalDiscussionResponse> mapDiscussions(UUID proposalId) {
+        return proposalDiscussionRepository.findByProposalId(proposalId)
+                .stream()
+                .map(d -> ProposalDiscussionResponse.builder()
+                        .id(d.getId())
+                        // .getId() on a lazy proxy does NOT initialize it — safe outside a session.
+                        .proposalId(d.getProposal() != null ? d.getProposal().getId() : null)
+                        .tenantUserId(d.getTenantUser() != null ? d.getTenantUser().getId() : null)
+                        .clientUserId(d.getClientUser() != null ? d.getClientUser().getId() : null)
+                        .meetingDate(d.getMeetingDate())
+                        .title(d.getTitle())
+                        .description(d.getDescription())
+                        .remarks(d.getRemarks())
+                        .requirement(d.getRequirement())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
