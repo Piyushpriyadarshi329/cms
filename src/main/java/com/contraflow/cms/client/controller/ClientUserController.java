@@ -1,6 +1,6 @@
 package com.contraflow.cms.client.controller;
 
-import com.contraflow.cms.admin.dto.ApiResponse;
+import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.dto.ClientUserRequest;
 import com.contraflow.cms.client.dto.ClientUserResponse;

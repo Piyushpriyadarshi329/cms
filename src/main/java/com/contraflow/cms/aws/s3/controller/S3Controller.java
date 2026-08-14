@@ -7,11 +7,12 @@ import com.contraflow.cms.aws.s3.dto.PresignedDownloadResponse;
 import com.contraflow.cms.aws.s3.dto.PresignedUploadRequest;
 import com.contraflow.cms.aws.s3.dto.PresignedUploadResponse;
 import com.contraflow.cms.aws.s3.services.S3Service;
+import com.contraflow.cms.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,17 +22,20 @@ public class S3Controller {
 
 
     @PostMapping("/presigned-upload")
-    public PresignedUploadResponse createPresigned(@RequestBody PresignedUploadRequest presignedUploadRequest){
-        return s3Service.generateUploadUrl(presignedUploadRequest);
+    public ResponseEntity<ApiResponse<PresignedUploadResponse>> createPresigned(@RequestBody PresignedUploadRequest presignedUploadRequest){
+        return ResponseEntity.ok(
+                ApiResponse.success("Upload URL generated successfully",
+                        s3Service.generateUploadUrl(presignedUploadRequest)));
     }
 
 
     @PostMapping("/presigned-download")
-    public PresignedDownloadResponse generateDownloadUrl(
+    public ResponseEntity<ApiResponse<PresignedDownloadResponse>> generateDownloadUrl(
             @Valid @RequestBody PresignedDownloadRequest request) {
 
-        return s3Service.generateDownloadUrl(request);
-
+        return ResponseEntity.ok(
+                ApiResponse.success("Download URL generated successfully",
+                        s3Service.generateDownloadUrl(request)));
     }
 
 }

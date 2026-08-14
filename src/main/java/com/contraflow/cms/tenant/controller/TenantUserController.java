@@ -1,6 +1,6 @@
 package com.contraflow.cms.tenant.controller;
 
-import com.contraflow.cms.admin.dto.ApiResponse;
+import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
 import com.contraflow.cms.tenant.dto.TenantUserResponse;
 import com.contraflow.cms.tenant.services.TenantUserService;

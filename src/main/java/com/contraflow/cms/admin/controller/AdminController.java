@@ -1,7 +1,7 @@
 package com.contraflow.cms.admin.controller;
 
 
-import com.contraflow.cms.admin.dto.ApiResponse;
+import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.admin.dto.AdminRequest;
 import com.contraflow.cms.admin.dto.AdminResponse;
 import com.contraflow.cms.admin.services.AdminService;

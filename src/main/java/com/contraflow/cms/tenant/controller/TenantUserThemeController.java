@@ -1,6 +1,6 @@
 package com.contraflow.cms.tenant.controller;
 
-import com.contraflow.cms.admin.dto.ApiResponse;
+import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.services.TenantUserService;
 import org.springframework.beans.factory.annotation.Autowired;

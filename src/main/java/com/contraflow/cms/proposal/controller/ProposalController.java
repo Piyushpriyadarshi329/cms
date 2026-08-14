@@ -1,6 +1,7 @@
 package com.contraflow.cms.proposal.controller;
 
 
+import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionRequest;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
@@ -10,6 +11,7 @@ import com.contraflow.cms.proposal.service.ProposalDiscussionService;
 import com.contraflow.cms.proposal.service.ProposalService;
 import com.contraflow.cms.security.AuthUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,24 +32,28 @@ public class ProposalController {
 
 
     @GetMapping
-    public List< ProposalResponse> getProposal(@AuthenticationPrincipal AuthUser authUser){
+    public  ResponseEntity<ApiResponse< List<ProposalResponse>>> getProposal(@AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
-        System.out.println("tenantId"+tenantId);
-        return proposalServices.getAllProposals( tenantId);
+      List<  ProposalResponse > proposalResponse=  proposalServices.getAllProposals( tenantId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Proposal Fetch successfully", proposalResponse));
     }
 
     @PostMapping
-    public ProposalResponse createProposal(@RequestBody ProposalRequest proposalRequest, @AuthenticationPrincipal AuthUser authUser){
+    public ResponseEntity<ApiResponse<ProposalResponse>> createProposal(@RequestBody ProposalRequest proposalRequest, @AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
-        return proposalServices.createProposal(tenantId,proposalRequest) ;
+        ProposalResponse created = proposalServices.createProposal(tenantId, proposalRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Proposal created successfully", created));
     }
 
 
 
     @PostMapping("/{id}/discussion")
-    public ResponseEntity<ProposalDiscussionResponse> createProposalDiscussion(@AuthenticationPrincipal AuthUser authUser,  @RequestBody ProposalDiscussionRequest proposalDiscussionRequest){
+    public ResponseEntity<ApiResponse<ProposalDiscussionResponse>> createProposalDiscussion(@AuthenticationPrincipal AuthUser authUser,  @RequestBody ProposalDiscussionRequest proposalDiscussionRequest){
        Long tenantId = authUser.getTenantId();
-        return ResponseEntity.ok(proposalDiscussionService.addDiscussion(tenantId,proposalDiscussionRequest));
+        ProposalDiscussionResponse created = proposalDiscussionService.addDiscussion(tenantId, proposalDiscussionRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Discussion added successfully", created));
     }
 
 
