@@ -67,7 +67,7 @@ public class TenantService {
 
     @Cacheable(cacheNames = "tenant", key = "'all'")
     public List<TenantResponse> getAllTenants(){
-        return tenantRepository.findAll().stream()
+        return tenantRepository.findAllByDeletedFalse().stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -89,9 +89,9 @@ public class TenantService {
     }
 
     public void deleteTenant(Long id){
-        Tenant tenant = tenantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
-        tenantRepository.delete(tenant);
+        Tenant tenant = tenantRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id: " + id));
+        tenant.setDeleted(true);
+        tenantRepository.save(tenant);
     }
 
     public ThemeConfig updateTheme(Long id, TenantThemeRequest request){
@@ -149,6 +149,7 @@ public class TenantService {
                 .pinCode(tenant.getPinCode())
                 .country(tenant.getCountry())
                 .verified(tenant.getVerified())
+                .createdAt(tenant.getCreatedAt())
                 .build();
     }
 }

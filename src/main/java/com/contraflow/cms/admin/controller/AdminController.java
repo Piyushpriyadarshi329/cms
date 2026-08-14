@@ -37,4 +37,19 @@ public class AdminController {
                 .body(ApiResponse.success("Admin created successfully", created));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteAdmin(
+            @PathVariable Long id
+    ) {
+
+        adminService.deleteAdmin(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Admin deleted successfully",
+                        null
+                )
+        );
+    }
+
 }

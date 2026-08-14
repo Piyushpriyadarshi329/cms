@@ -13,5 +13,9 @@ public interface TenantUserRepository  extends JpaRepository<TenantUser,Long> {
     List<TenantUser> findByTenantId_Id(Long tenantId);
     boolean existsByEmail(String email);
     Optional<TenantUser>findByEmail(String email);
-
+    List<TenantUser> findByTenantId_IdAndDeletedFalse(Long tenantId);
+    Optional<TenantUser> findByTenantId_IdAndIdAndDeletedFalse(
+            Long tenantId,
+            Long id
+    );
 }

@@ -2,6 +2,8 @@ package com.contraflow.cms.tenant.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 
 @Getter
 @Setter
@@ -22,4 +24,5 @@ public class TenantResponse {
     private String pinCode;
     private String country;
     private Boolean verified;
+    private LocalDateTime createdAt;
 }
