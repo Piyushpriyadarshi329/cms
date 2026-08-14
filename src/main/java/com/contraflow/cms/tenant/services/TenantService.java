@@ -8,6 +8,7 @@ import com.contraflow.cms.tenant.dto.TenantThemeRequest;
 import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
+import com.contraflow.cms.aws.s3.services.S3Service;
 import com.contraflow.cms.kafka.EmailType;
 import com.contraflow.cms.kafka.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class TenantService {
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
+
+    @Autowired
+    private S3Service s3Service;
 
     public TenantResponse createTenant(TenantRequest request) {
 
@@ -136,11 +140,13 @@ public class TenantService {
     }
 
     private TenantResponse toResponse(Tenant tenant){
+
         return TenantResponse.builder()
                 .id(tenant.getId())
                 .name(tenant.getName())
                 .legalName(tenant.getLegalName())
-                .logoUrl(tenant.getLogoUrl())
+                // logoUrl is stored as an S3 object key; return a usable presigned URL
+                .logoUrl(s3Service.getDownloadUrl(tenant.getLogoUrl()))
                 .mobile(tenant.getMobile())
                 .email(tenant.getEmail())
                 .address(tenant.getAddress())

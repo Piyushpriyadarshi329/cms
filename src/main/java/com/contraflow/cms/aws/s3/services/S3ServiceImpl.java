@@ -71,10 +71,23 @@ public class S3ServiceImpl implements S3Service {
     public PresignedDownloadResponse generateDownloadUrl(
             PresignedDownloadRequest request) {
 
+        return new PresignedDownloadResponse(
+                getDownloadUrl(request.getObjectKey()),
+                900
+        );
+    }
+
+    @Override
+    public String getDownloadUrl(String objectKey) {
+         System.out.println("objectKey"+objectKey);
+        if (objectKey == null || objectKey.isBlank()) {
+            return null;
+        }
+
         GetObjectRequest getObjectRequest =
                 GetObjectRequest.builder()
                         .bucket(bucketName)
-                        .key(request.getObjectKey())
+                        .key(objectKey)
                         .build();
 
         GetObjectPresignRequest presignRequest =
@@ -86,10 +99,7 @@ public class S3ServiceImpl implements S3Service {
         PresignedGetObjectRequest presignedRequest =
                 presigner.presignGetObject(presignRequest);
 
-        return new PresignedDownloadResponse(
-                presignedRequest.url().toString(),
-                900
-        );
+        return presignedRequest.url().toString();
     }
 
 }

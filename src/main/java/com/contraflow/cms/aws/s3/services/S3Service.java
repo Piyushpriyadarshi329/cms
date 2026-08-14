@@ -10,4 +10,10 @@ public interface S3Service {
 
     PresignedUploadResponse generateUploadUrl(PresignedUploadRequest request);
     PresignedDownloadResponse generateDownloadUrl(PresignedDownloadRequest request);
+
+    /**
+     * Presigned GET URL for a stored object key. Returns null when the key is blank,
+     * so callers can pass a possibly-empty DB value straight through.
+     */
+    String getDownloadUrl(String objectKey);
 }
