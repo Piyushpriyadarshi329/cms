@@ -137,6 +137,7 @@ public class ProposalServiceImpl implements ProposalService{
                 .title(proposal.getTitle())
                 .description(proposal.getDescription())
                 .tenantId(proposal.getTenant().getId())
+                .status(proposal.getStatus())
                 .tenantName(proposal.getTenant().getName())
                 .clientId(proposal.getClient().getId())
                 .clientName(proposal.getClient().getName())

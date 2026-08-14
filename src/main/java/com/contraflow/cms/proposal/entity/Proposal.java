@@ -40,7 +40,7 @@ public class Proposal {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private ProposalStatus status;
+    private ProposalStatus status = ProposalStatus.DRAFT ;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="client_user_id" )

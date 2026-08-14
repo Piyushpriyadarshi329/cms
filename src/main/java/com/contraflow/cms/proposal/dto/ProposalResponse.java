@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.contraflow.cms.proposal.entity.Proposal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class ProposalResponse {
     private Long tenantId;
     private String tenantName;
     private Long clientId;
+    private Proposal.ProposalStatus status;
     private String clientName;
     private Long clientUserId;
     private Date proposalStartDate;
