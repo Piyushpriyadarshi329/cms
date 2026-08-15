@@ -1,8 +1,10 @@
 package com.contraflow.cms.contract.entity;
 
 
+import com.contraflow.cms.tenant.entity.Tenant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -12,15 +14,16 @@ import java.util.UUID;
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "contracts")
 public class Contract {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
     private UUID Id;
 
-
-    @Column(name = "tenant_id")
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id")
+    private Tenant tenant;
 
 
     @Column(name = "proposal_id")
@@ -29,17 +32,16 @@ public class Contract {
     @Column(name = "contract_title")
     private String contractTitle;
 
-
-
     @Enumerated(EnumType.STRING)
     private ContractStatus status;
 
     @Column(name = "billing_type")
-    private String billingType;
-
+    @Enumerated(EnumType.STRING)
+    private BillingType billingType;
 
     @Column(name = "contract_type")
-    private String contractType;
+    @Enumerated(EnumType.STRING)
+    private ContractType contractType;
 
 
 
