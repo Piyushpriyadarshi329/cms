@@ -26,14 +26,21 @@ public class Contract {
     private Tenant tenant;
 
 
-    @Column(name = "proposal_id")
+    @Column(name = "proposal_id", unique = true)
     private UUID proposalId;
 
     @Column(name = "contract_title")
     private String contractTitle;
 
+    @Column(name = "contract_Number")
+    private String contractNumber;
+
+
+
+    @Builder.Default
+    @Column(name="contract_status")
     @Enumerated(EnumType.STRING)
-    private ContractStatus status;
+    private ContractStatus status = ContractStatus.MANAGER_APPROVAL_PENDING;
 
     @Column(name = "billing_type")
     @Enumerated(EnumType.STRING)

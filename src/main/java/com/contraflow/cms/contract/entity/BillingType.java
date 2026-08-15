@@ -1,7 +1,7 @@
 package com.contraflow.cms.contract.entity;
 
 public enum BillingType {
-    Monthly,
+    MONTHLY,
     HALF_YEARLY,
     YEARLY,
     ONE_TIME

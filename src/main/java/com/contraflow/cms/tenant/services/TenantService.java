@@ -7,17 +7,21 @@ import com.contraflow.cms.tenant.dto.TenantResponse;
 import com.contraflow.cms.tenant.dto.TenantThemeRequest;
 import com.contraflow.cms.tenant.dto.ThemeConfig;
 import com.contraflow.cms.tenant.entity.Tenant;
+import com.contraflow.cms.tenant.mapper.TenantMapper;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import com.contraflow.cms.aws.s3.services.S3Service;
 import com.contraflow.cms.kafka.EmailType;
 import com.contraflow.cms.kafka.KafkaProducerService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TenantService {
 
     @Autowired
@@ -26,8 +30,7 @@ public class TenantService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    @Autowired
-    private S3Service s3Service;
+   public final TenantMapper tenantMapper;
 
     public TenantResponse createTenant(TenantRequest request) {
 
@@ -54,7 +57,7 @@ public class TenantService {
 
         Tenant savedTenant = tenantRepository.save(tenant);
 
-        TenantResponse response = toResponse(savedTenant);
+        TenantResponse response = tenantMapper.toResponse(savedTenant);
 
         // publish to the "emails" topic (key = TENANT_CREATED) after the tenant is saved
         kafkaProducerService.sendEmail(EmailType.TENANT_CREATED, response);
@@ -66,13 +69,13 @@ public class TenantService {
     public TenantResponse getTenantById(Long id){
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id : " + id));
-        return toResponse(tenant);
+        return tenantMapper.toResponse(tenant);
     }
 
     @Cacheable(cacheNames = "tenant", key = "'all'")
     public List<TenantResponse> getAllTenants(){
         return tenantRepository.findAllByDeletedFalse().stream()
-                .map(this::toResponse)
+                .map(tenantMapper::toResponse)
                 .toList();
     }
 
@@ -89,7 +92,7 @@ public class TenantService {
         tenant1.setState(request.getState());
         tenant1.setPinCode(request.getPinCode());
         tenant1.setCountry(request.getCountry());
-        return toResponse(tenantRepository.save(tenant1));
+        return tenantMapper.toResponse(tenantRepository.save(tenant1));
     }
 
     public void deleteTenant(Long id){
@@ -139,23 +142,6 @@ public class TenantService {
         return saved.getThemeConfig();
     }
 
-    private TenantResponse toResponse(Tenant tenant){
 
-        return TenantResponse.builder()
-                .id(tenant.getId())
-                .name(tenant.getName())
-                .legalName(tenant.getLegalName())
-                // logoUrl is stored as an S3 object key; return a usable presigned URL
-                .logoUrl(s3Service.getDownloadUrl(tenant.getLogoUrl()))
-                .mobile(tenant.getMobile())
-                .email(tenant.getEmail())
-                .address(tenant.getAddress())
-                .state(tenant.getState())
-                .city(tenant.getCity())
-                .pinCode(tenant.getPinCode())
-                .country(tenant.getCountry())
-                .verified(tenant.getVerified())
-                .createdAt(tenant.getCreatedAt())
-                .build();
-    }
+
 }

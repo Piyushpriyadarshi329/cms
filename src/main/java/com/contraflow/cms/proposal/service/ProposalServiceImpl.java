@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import java.util.stream.Collectors;
 
+import com.contraflow.cms.proposal.mapper.ProposalMapper;
 import com.contraflow.cms.proposal.repository.ProposalDiscussionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 
 @Service
+@RequiredArgsConstructor
 public class ProposalServiceImpl implements ProposalService{
     @Autowired
     private ProposalRepository proposalRepository;
@@ -39,6 +42,9 @@ public class ProposalServiceImpl implements ProposalService{
     private ClientUserRepository clientUserRepository;
     @Autowired
     private ProposalDiscussionRepository proposalDiscussionRepository;
+
+
+    public final ProposalMapper proposalMapper;
 
     @Override
     public ProposalResponse createProposal(Long tenantId, ProposalRequest request){
@@ -65,14 +71,15 @@ public class ProposalServiceImpl implements ProposalService{
         }
 
         Proposal saved = proposalRepository.save(proposal);
-        return mapToResponse(saved);
+
+        return proposalMapper.mapToResponse(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProposalResponse getProposalById(UUID id){
         Proposal proposal=proposalRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
-        return mapToResponse(proposal);
+        return proposalMapper.mapToResponse(proposal);
     }
 
     @Override
@@ -80,7 +87,7 @@ public class ProposalServiceImpl implements ProposalService{
     public List<ProposalResponse> getAllProposals( Long tenantId) {
         return proposalRepository.findByTenantId(tenantId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(proposalMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +120,7 @@ public class ProposalServiceImpl implements ProposalService{
         }
 
         Proposal updated = proposalRepository.save(proposal);
-        return mapToResponse(updated);
+        return proposalMapper.mapToResponse(updated);
     }
 
     @Override
@@ -130,39 +137,6 @@ public class ProposalServiceImpl implements ProposalService{
     }
 
 
-    private ProposalResponse mapToResponse(Proposal proposal) {
-        return ProposalResponse.builder()
-                .id(proposal.getId())
-                .proposalNumber(proposal.getProposalNumber())
-                .title(proposal.getTitle())
-                .description(proposal.getDescription())
-                .tenantId(proposal.getTenant().getId())
-                .status(proposal.getStatus())
-                .tenantName(proposal.getTenant().getName())
-                .clientId(proposal.getClient().getId())
-                .clientName(proposal.getClient().getName())
-                .clientUserId(proposal.getClientUser() != null ? proposal.getClientUser().getId() : null)
-                .proposalStartDate(proposal.getProposalStartDate())
-                .proposalDiscussion(mapDiscussions(proposal.getId()))
-                .build();
-    }
 
-    private List<ProposalDiscussionResponse> mapDiscussions(UUID proposalId) {
-        return proposalDiscussionRepository.findByProposalId(proposalId)
-                .stream()
-                .map(d -> ProposalDiscussionResponse.builder()
-                        .id(d.getId())
-                        // .getId() on a lazy proxy does NOT initialize it — safe outside a session.
-                        .proposalId(d.getProposal() != null ? d.getProposal().getId() : null)
-                        .tenantUserId(d.getTenantUser() != null ? d.getTenantUser().getId() : null)
-                        .clientUserId(d.getClientUser() != null ? d.getClientUser().getId() : null)
-                        .meetingDate(d.getMeetingDate())
-                        .title(d.getTitle())
-                        .description(d.getDescription())
-                        .remarks(d.getRemarks())
-                        .requirement(d.getRequirement())
-                        .build())
-                .collect(Collectors.toList());
-    }
 
 }

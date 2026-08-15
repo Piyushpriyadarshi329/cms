@@ -138,7 +138,9 @@
 							<version>1.18.46</version>
 						</path>
 					</annotationProcessorPaths>
-				</configuration>
+                    <source>25</source>
+                    <target>25</target>
+                </configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
