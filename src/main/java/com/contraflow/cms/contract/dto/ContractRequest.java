@@ -29,8 +29,7 @@ public class ContractRequest {
     private ContractStatus status = ContractStatus.MANAGER_APPROVAL_PENDING;
 
 
-    @NotBlank(message = "billing Type is Required Field")
-    private String billingType;
+
 
     @NotBlank(message = "contract Type is Required Field")
     private String contractType ;

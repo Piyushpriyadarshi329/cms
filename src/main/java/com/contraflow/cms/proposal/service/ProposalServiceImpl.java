@@ -14,6 +14,7 @@ import com.contraflow.cms.proposal.dto.ProposalSummaryResponse;
 import com.contraflow.cms.proposal.dto.ProposalVersionResponse;
 import com.contraflow.cms.proposal.entity.ProposalVersion;
 import com.contraflow.cms.proposal.mapper.ProposalMapper;
+import com.contraflow.cms.proposal.mapper.ProposalVersionMapper;
 import com.contraflow.cms.proposal.repository.ProposalDiscussionRepository;
 import com.contraflow.cms.proposal.repository.ProposalVersionRepository;
 import com.contraflow.cms.tenant.entity.TenantUser;
@@ -28,6 +29,8 @@ import com.contraflow.cms.client.entity.Client;
 import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.client.repository.ClientRepository;
 import com.contraflow.cms.client.repository.ClientUserRepository;
+import com.contraflow.cms.contract.repository.ContractRepository;
+import com.contraflow.cms.exception.ProposalLockedException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
@@ -58,7 +61,11 @@ public class ProposalServiceImpl implements ProposalService{
 
     public final ProposalMapper proposalMapper;
 
+    public final ProposalVersionMapper proposalVersionMapper;
+
     public final TenantMapper tenantMapper;
+
+    public final ContractRepository contractRepository;
 
 
     @Transactional
@@ -120,7 +127,7 @@ public class ProposalServiceImpl implements ProposalService{
         List<ProposalVersionResponse> versions = proposalVersionRepository
                 .findByProposalIdOrderByProposalVersionNumberAsc(id)
                 .stream()
-                .map(this::mapVersion)
+                .map(proposalVersionMapper::mapToResponse)
                 .collect(Collectors.toList());
 
         return ProposalDetailResponse.builder()
@@ -175,22 +182,6 @@ public class ProposalServiceImpl implements ProposalService{
                 .build();
     }
 
-    private ProposalVersionResponse mapVersion(ProposalVersion version) {
-        TenantUser createdBy = version.getCreatedBy();
-        return ProposalVersionResponse.builder()
-                .id(version.getId())
-                .proposalVersionNumber(version.getProposalVersionNumber())
-                .proposalAmount(version.getProposalAmount())
-                .currency(version.getCurrency())
-                .billing(version.getBilling())
-                .startDate(version.getStartDate())
-                .endDate(version.getEndDate())
-                .createdById(createdBy != null ? createdBy.getId() : null)
-                .createdByName(createdBy != null ? (createdBy.getFirstName() + " " + createdBy.getLastName()) : null)
-                .createdAt(version.getCreatedAt())
-                .build();
-    }
-
     @Override
     @Transactional(readOnly = true)
     public List<ProposalSummaryResponse> getAllProposals( Long tenantId) {
@@ -204,6 +195,13 @@ public class ProposalServiceImpl implements ProposalService{
     public ProposalResponse updateProposal(Long tenantId, UUID id,ProposalRequest request){
         Proposal proposal = proposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
+
+        // Once a proposal has an ACTIVE contract, it is locked from further edits.
+        // A reverted (soft-deleted) contract does not lock it — the proposal can be revised.
+        if (contractRepository.existsByProposalIdAndDeletedFalse(id)) {
+            throw new ProposalLockedException(
+                    "Proposal cannot be updated because it has already been converted to a contract");
+        }
 
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException(

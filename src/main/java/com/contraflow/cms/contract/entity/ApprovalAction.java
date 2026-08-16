@@ -5,4 +5,7 @@ public enum ApprovalAction {
     APPROVED,
     DECLINED,
     WITHDRAW,
+    REVERTED,
+    SENT_FOR_ESIGN,
+    CLOSED,
 }

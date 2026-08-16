@@ -36,6 +36,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(ProposalLockedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleProposalLocked(ProposalLockedException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidContractStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidContractState(InvalidContractStateException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return build(HttpStatus.CONFLICT, "A record with the same unique value already exists");

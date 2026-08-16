@@ -50,7 +50,7 @@ public class Proposal {
     @Column(name ="proposal_start_date" )
     private Date proposalStartDate;
 
-    public enum ProposalStatus { DRAFT, COMPLETE, DECLINE};
+    public enum ProposalStatus { DRAFT, COMPLETE, DECLINE, REVISED};
 
 }
 
