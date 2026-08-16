@@ -1,5 +1,6 @@
 package com.contraflow.cms.proposal.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import com.contraflow.cms.tenant.entity.Tenant;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.client.repository.ClientUserRepository;
@@ -16,8 +18,10 @@ import com.contraflow.cms.proposal.dto.ProposalDiscussionRequest;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.entity.Proposal;
 import com.contraflow.cms.proposal.entity.ProposalDiscussion;
+import com.contraflow.cms.proposal.entity.ProposalVersion;
 import com.contraflow.cms.proposal.repository.ProposalDiscussionRepository;
 import com.contraflow.cms.proposal.repository.ProposalRepository;
+import com.contraflow.cms.proposal.repository.ProposalVersionRepository;
 import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
 
@@ -39,7 +43,11 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
     @Autowired
     private TenantRepository tenantRepository;
 
+    @Autowired
+    private ProposalVersionRepository proposalVersionRepository;
+
     @Override
+    @Transactional
     public ProposalDiscussionResponse addDiscussion(Long tenantId, ProposalDiscussionRequest request) {
 
         Proposal proposal = proposalRepository.findById(request.getProposalId())
@@ -72,8 +80,34 @@ public class ProposalDiscussionServiceImpl implements ProposalDiscussionService 
         }
 
         ProposalDiscussion saved = proposalDiscussionRepository.save(discussion);
+
+        // When the terms changed, snapshot a new proposal version with the next version number.
+        if (Boolean.TRUE.equals(request.getTermChanged())) {
+
+            int nextVersionNumber = proposalVersionRepository
+                    .findTopByProposalIdOrderByProposalVersionNumberDesc(proposal.getId())
+                    .map(v -> v.getProposalVersionNumber() + 1)
+                    .orElse(1);
+
+            ProposalVersion version = ProposalVersion.builder()
+                    .tenant(tenant)
+                    .proposal(proposal)
+                    .proposalAmount(request.getProposalAmount())
+                    .billing(request.getBilling())
+                    .startDate(request.getStartDate())
+                    .endDate(request.getEndDate())
+                    .proposalVersionNumber(nextVersionNumber)
+                    .createdBy(tenantUser)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            proposalVersionRepository.save(version);
+        }
+
         return mapToResponse(saved);
     }
+
+
 
     @Override
     public List<ProposalDiscussionResponse> getDiscussionsByProposalId(UUID proposalId) {

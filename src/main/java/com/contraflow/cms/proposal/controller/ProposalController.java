@@ -2,10 +2,12 @@ package com.contraflow.cms.proposal.controller;
 
 
 import com.contraflow.cms.common.dto.ApiResponse;
+import com.contraflow.cms.proposal.dto.ProposalDetailResponse;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionRequest;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
+import com.contraflow.cms.proposal.dto.ProposalSummaryResponse;
 import com.contraflow.cms.proposal.entity.Proposal;
 import com.contraflow.cms.proposal.service.ProposalDiscussionService;
 import com.contraflow.cms.proposal.service.ProposalService;
@@ -17,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tenant/proposal")
@@ -32,9 +35,9 @@ public class ProposalController {
 
 
     @GetMapping
-    public  ResponseEntity<ApiResponse< List<ProposalResponse>>> getProposal(@AuthenticationPrincipal AuthUser authUser){
+    public  ResponseEntity<ApiResponse< List<ProposalSummaryResponse>>> getProposal(@AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
-      List<  ProposalResponse > proposalResponse=  proposalServices.getAllProposals( tenantId);
+      List<ProposalSummaryResponse> proposalResponse = proposalServices.getAllProposals( tenantId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Proposal Fetch successfully", proposalResponse));
     }
 
@@ -60,10 +63,14 @@ public class ProposalController {
 
 
 
-//    @GetMapping("/id:discussion")
-//    public String getProposalDiscussion(){
-//        return "fetch proposal discussion";
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProposalDetailResponse>> getProposalDetail(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal AuthUser authUser){
+        Long tenantId = authUser.getTenantId();
+        ProposalDetailResponse detail = proposalServices.getProposalDetail(tenantId, id);
+        return ResponseEntity.ok(ApiResponse.success("Proposal details fetched successfully", detail));
+    }
 
 
 

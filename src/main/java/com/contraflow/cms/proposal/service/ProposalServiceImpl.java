@@ -1,13 +1,24 @@
 package com.contraflow.cms.proposal.service;
 
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.UUID;
 
 import java.util.stream.Collectors;
 
+import com.contraflow.cms.client.dto.ClientResponse;
+import com.contraflow.cms.client.dto.ClientUserResponse;
+import com.contraflow.cms.proposal.dto.ProposalDetailResponse;
+import com.contraflow.cms.proposal.dto.ProposalSummaryResponse;
+import com.contraflow.cms.proposal.dto.ProposalVersionResponse;
+import com.contraflow.cms.proposal.entity.ProposalVersion;
 import com.contraflow.cms.proposal.mapper.ProposalMapper;
 import com.contraflow.cms.proposal.repository.ProposalDiscussionRepository;
+import com.contraflow.cms.proposal.repository.ProposalVersionRepository;
+import com.contraflow.cms.tenant.entity.TenantUser;
+import com.contraflow.cms.tenant.mapper.TenantMapper;
+import com.contraflow.cms.tenant.repository.TenantUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +29,6 @@ import com.contraflow.cms.client.entity.ClientUser;
 import com.contraflow.cms.client.repository.ClientRepository;
 import com.contraflow.cms.client.repository.ClientUserRepository;
 import com.contraflow.cms.exception.ResourceNotFoundException;
-import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
 import com.contraflow.cms.proposal.entity.Proposal;
@@ -40,17 +50,23 @@ public class ProposalServiceImpl implements ProposalService{
 
     @Autowired
     private ClientUserRepository clientUserRepository;
-    @Autowired
-    private ProposalDiscussionRepository proposalDiscussionRepository;
+
+    public final ProposalVersionRepository proposalVersionRepository;
+
+    public final TenantUserRepository tenantUserRepository;
 
 
     public final ProposalMapper proposalMapper;
 
+    public final TenantMapper tenantMapper;
+
+
+    @Transactional
     @Override
     public ProposalResponse createProposal(Long tenantId, ProposalRequest request){
 
         Tenant tenant=tenantRepository.findById(tenantId).orElseThrow(()-> new ResourceNotFoundException(
-            "Tenant not found with id: " + request.getTenantId()));
+            "Tenant not found with id: " + tenantId));
 
         Client client=clientRepository.findById(request.getClientId()).orElseThrow(() -> new ResourceNotFoundException(
             "Client not found with id: " + request.getClientId()));
@@ -69,8 +85,15 @@ public class ProposalServiceImpl implements ProposalService{
                             "Client contact not found with id: " + request.getClientUserId()));
             proposal.setClientUser(contact);
         }
+            TenantUser tenantUser = tenantUserRepository.findById(request.getCreatedBy())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Client contact not found with id: " + request.getClientUserId()));
+
 
         Proposal saved = proposalRepository.save(proposal);
+
+        ProposalVersion  proposalVersion = ProposalVersion.builder().tenant(tenant).proposal(proposal).proposalAmount(request.getProposalAmount()).proposalVersionNumber(1).billing(request.getBilling()).startDate(request.getStartDate()).endDate(request.getEndDate()).createdBy(tenantUser).createdAt(LocalDateTime.now()).build();
+        proposalVersionRepository.save(proposalVersion);
 
         return proposalMapper.mapToResponse(saved);
     }
@@ -84,21 +107,107 @@ public class ProposalServiceImpl implements ProposalService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProposalResponse> getAllProposals( Long tenantId) {
+    public ProposalDetailResponse getProposalDetail(Long tenantId, UUID id) {
+
+        Proposal proposal = proposalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
+
+        // multi-tenant isolation: a tenant can only read its own proposals
+        if (proposal.getTenant() == null || !proposal.getTenant().getId().equals(tenantId)) {
+            throw new ResourceNotFoundException("Proposal not found with id: " + id);
+        }
+
+        List<ProposalVersionResponse> versions = proposalVersionRepository
+                .findByProposalIdOrderByProposalVersionNumberAsc(id)
+                .stream()
+                .map(this::mapVersion)
+                .collect(Collectors.toList());
+
+        return ProposalDetailResponse.builder()
+                .id(proposal.getId())
+                .proposalNumber(proposal.getProposalNumber())
+                .title(proposal.getTitle())
+                .description(proposal.getDescription())
+                .status(proposal.getStatus())
+                .proposalStartDate(proposal.getProposalStartDate())
+                .tenant(tenantMapper.toResponse(proposal.getTenant()))
+                .client(mapClient(proposal.getClient()))
+                .clientUser(mapClientUser(proposal.getClientUser()))
+                .discussions(proposalMapper.mapDiscussions(proposal.getId()))
+                .versions(versions)
+                .build();
+    }
+
+    private ClientResponse mapClient(Client client) {
+        if (client == null) {
+            return null;
+        }
+        return ClientResponse.builder()
+                .id(client.getId())
+                .tenantId(client.getTenantId())
+                .name(client.getName())
+                .email(client.getEmail())
+                .mobile(client.getMobile())
+                .pan(client.getPan())
+                .gst(client.getGst())
+                .address(client.getAddress())
+                .city(client.getCity())
+                .state(client.getState())
+                .country(client.getCountry())
+                .pincode(client.getPincode())
+                .createdAt(client.getCreatedAt())
+                .updatedAt(client.getUpdatedAt())
+                .build();
+    }
+
+    private ClientUserResponse mapClientUser(ClientUser clientUser) {
+        if (clientUser == null) {
+            return null;
+        }
+        return ClientUserResponse.builder()
+                .id(clientUser.getId())
+                .clientId(clientUser.getClientId())
+                .firstname(clientUser.getFirstName())
+                .lastname(clientUser.getLastName())
+                .mobile(clientUser.getMobile())
+                .email(clientUser.getEmail())
+                .active(clientUser.getActive())
+                .build();
+    }
+
+    private ProposalVersionResponse mapVersion(ProposalVersion version) {
+        TenantUser createdBy = version.getCreatedBy();
+        return ProposalVersionResponse.builder()
+                .id(version.getId())
+                .proposalVersionNumber(version.getProposalVersionNumber())
+                .proposalAmount(version.getProposalAmount())
+                .currency(version.getCurrency())
+                .billing(version.getBilling())
+                .startDate(version.getStartDate())
+                .endDate(version.getEndDate())
+                .createdById(createdBy != null ? createdBy.getId() : null)
+                .createdByName(createdBy != null ? (createdBy.getFirstName() + " " + createdBy.getLastName()) : null)
+                .createdAt(version.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProposalSummaryResponse> getAllProposals( Long tenantId) {
         return proposalRepository.findByTenantId(tenantId)
                 .stream()
-                .map(proposalMapper::mapToResponse)
+                .map(proposalMapper::mapToSummary)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ProposalResponse updateProposal(UUID id,ProposalRequest request){
+    public ProposalResponse updateProposal(Long tenantId, UUID id,ProposalRequest request){
         Proposal proposal = proposalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proposal not found with id: " + id));
 
-        Tenant tenant = tenantRepository.findById(request.getTenantId())
+        Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Tenant not found with id: " + request.getTenantId()));
+                        "Tenant not found with id: " + tenantId));
 
         Client client = clientRepository.findById(request.getClientId())
                 .orElseThrow(() -> new ResourceNotFoundException(
