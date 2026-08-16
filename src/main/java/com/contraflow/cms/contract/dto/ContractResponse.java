@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -29,5 +30,6 @@ public class ContractResponse {
     private ContractStatus status;
     private String billingType;
     private String contractType;
+    private List< TimeLineResponse> timeLine;
 
 }
