@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())   // typical for a stateless JSON/JWT API
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()   // <-- NOT "/api/v1/auth/**"
+                        .requestMatchers("/auth/**","/auth/otp","/auth/validate","/auth/reset").permitAll()   // <-- NOT "/api/v1/auth/**"
                         .requestMatchers("/health").permitAll()    // public liveness check (Railway healthcheck)
                         // Swagger / OpenAPI docs — public (paths are relative to the /api/v1 servlet path)
                         .requestMatchers(
