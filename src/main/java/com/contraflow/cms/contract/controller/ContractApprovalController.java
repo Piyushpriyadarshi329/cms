@@ -13,7 +13,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/contract/{contractId}")
+@RequestMapping("tenant/contract/{contractId}")
 @RequiredArgsConstructor
 public class ContractApprovalController {
 
@@ -51,7 +51,7 @@ public class ContractApprovalController {
     }
 
 
-    @PostMapping("/send-esign")
+    @PostMapping("/esign")
     public ResponseEntity<ApiResponse<Void>> contractSendESign(
             @PathVariable UUID contractId,
             @RequestBody(required = false) ContractApprovalRequest request,
@@ -60,6 +60,8 @@ public class ContractApprovalController {
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));
         return ResponseEntity.ok(ApiResponse.success("Contract sent for e-sign", null));
     }
+
+//    @PostMapping("/request-esign")
 
     @PostMapping("/close")
     public ResponseEntity<ApiResponse<Void>> contractClose(
