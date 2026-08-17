@@ -1,6 +1,8 @@
 package com.contraflow.cms.security.config;
 
 
+import com.contraflow.cms.security.JwtAccessDeniedHandler;
+import com.contraflow.cms.security.JwtAuthenticationEntryPoint;
 import com.contraflow.cms.security.jwt.JwtAuthenticationFilter;
 import com.contraflow.cms.security.service.CustomUserDetailsService;
 import com.contraflow.cms.security.service.TenantUserDetailsService;
@@ -31,6 +33,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
 
     @Bean
@@ -51,6 +55,9 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml"
                         ).permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)   // 401 for missing/invalid token
+                        .accessDeniedHandler(jwtAccessDeniedHandler))            // 403 for wrong role
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
