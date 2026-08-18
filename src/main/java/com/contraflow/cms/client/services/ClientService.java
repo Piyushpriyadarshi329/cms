@@ -4,7 +4,6 @@ import com.contraflow.cms.client.dto.ClientRequest;
 import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.entity.Client;
 import com.contraflow.cms.client.repository.ClientRepository;
-import com.contraflow.cms.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -152,4 +151,6 @@ public class ClientService {
 
         return clients.isEmpty() ? null : clients.get(0);
     }
+
+
 }
