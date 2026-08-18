@@ -38,6 +38,19 @@ public class TenantUserController {
         return ResponseEntity.ok(ApiResponse.success("Tenant user updated successfully", updated));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteUser(
+            @PathVariable Long tenantId,
+            @PathVariable Long id
+    ) {
+        tenantUserService.deleteUser(tenantId, id);
 
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Tenant user deleted successfully",
+                        null
+                )
+        );
+    }
 
 }

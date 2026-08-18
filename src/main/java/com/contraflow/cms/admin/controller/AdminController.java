@@ -32,8 +32,9 @@ public class AdminController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<AdminResponse>> createAdmin(@Valid @RequestBody AdminRequest adminRequest){
+        AdminResponse created = adminService.createAdmin(adminRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Admin created successfully", adminService.createAdmin(adminRequest)));
+                .body(ApiResponse.success("Admin created successfully", created));
     }
 
     @DeleteMapping("/{id}")
