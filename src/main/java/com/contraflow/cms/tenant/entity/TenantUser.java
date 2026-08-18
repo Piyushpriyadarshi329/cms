@@ -64,4 +64,8 @@ public class TenantUser {
     private LocalDateTime last_login_at;
 
     private String otp;
+    private LocalDateTime otpExpiresAt;
+
+    private String resetToken;
+    private LocalDateTime resetTokenExpiresAt;
 }

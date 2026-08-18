@@ -18,4 +18,5 @@ public interface TenantUserRepository  extends JpaRepository<TenantUser,Long> {
             Long tenantId,
             Long id
     );
+    Optional<TenantUser> findByResetToken(String resetToken);
 }

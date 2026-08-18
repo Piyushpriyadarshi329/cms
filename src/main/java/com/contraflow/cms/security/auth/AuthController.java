@@ -101,6 +101,6 @@ public LoginResponse adminLogin(@RequestBody LoginRequest request){
 
     @PostMapping("/reset")
     public String resetPassword(@RequestBody ResetRequest request){
-    return tenantUserService.reset(request.getEmail(),request.getPassword());
+    return tenantUserService.reset(request.getResetToken(),request.getPassword());
     }
 }

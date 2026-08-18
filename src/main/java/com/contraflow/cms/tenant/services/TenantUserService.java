@@ -11,12 +11,15 @@ import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantRepository;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TenantUserService {
@@ -121,22 +124,48 @@ public class TenantUserService {
     public String sendOtp(String email){
         TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
         tenantUser.setOtp(generateOtp());
+        tenantUser.setOtpExpiresAt(LocalDateTime.now().plusMinutes(5));
         tenantUserRepository.save(tenantUser);
         return "OTP sent successfully";
     }
 
     public String validateOtp(String otp, String email){
-        TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
-        String otpSaved =  tenantUser.getOtp();
-        if(otpSaved.equals(otp)){
-          return "OTP Verified";
+        TenantUser tenantUser = tenantUserRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
+
+        if (tenantUser.getOtp() == null
+                || !tenantUser.getOtp().equals(otp)
+                || tenantUser.getOtpExpiresAt() == null
+                || tenantUser.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadCredentialsException("Invalid or expired OTP");
         }
-        return "Invalid OTP";
+
+        String resetToken = UUID.randomUUID().toString();
+        tenantUser.setResetToken(resetToken);
+        tenantUser.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+
+        // OTP is single-use — clear it now so it can't be replayed.
+        tenantUser.setOtp(null);
+        tenantUser.setOtpExpiresAt(null);
+
+        tenantUserRepository.save(tenantUser);
+        return resetToken;
     }
 
-    public String reset(String email, String password){
-        TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
+    public String reset(String resetToken, String password){
+        TenantUser tenantUser = tenantUserRepository.findByResetToken(resetToken)
+                .orElseThrow(() -> new BadCredentialsException("Invalid or expired reset token"));
+
+        if (tenantUser.getResetTokenExpiresAt() == null
+                || tenantUser.getResetTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadCredentialsException("Invalid or expired reset token");
+        }
+
         tenantUser.setPassword(passwordEncoder.encode(password));
+
+        tenantUser.setResetToken(null);
+        tenantUser.setResetTokenExpiresAt(null);
+
         tenantUserRepository.save(tenantUser);
         return "Password Changed Successfully";
     }

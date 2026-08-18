@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class ResetRequest {
-    private String email;
+    private String resetToken;
     private String password;
 }
