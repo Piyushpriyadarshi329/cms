@@ -68,7 +68,7 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     // Dev React apps on any localhost port (3000, 5173, etc.). Add your prod origin here later.
-    config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+    config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*", "https://admindashboard-three-psi.vercel.app"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setExposedHeaders(List.of("Authorization"));
