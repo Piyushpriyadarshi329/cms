@@ -1,6 +1,5 @@
 package com.contraflow.cms.tenant.services;
 
-import com.contraflow.cms.client.entity.Client;
 import com.contraflow.cms.exception.DuplicateResourceException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
@@ -13,9 +12,7 @@ import com.contraflow.cms.tenant.repository.TenantUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
-import java.security.SecureRandom;
 import java.util.List;
 
 @Service
@@ -26,13 +23,6 @@ public class TenantUserService {
     private TenantRepository tenantRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    private static final SecureRandom secureRandom = new SecureRandom();
-
-    public String generateOtp() {
-        int otp = secureRandom.nextInt(1_000_000);
-        return String.format("%06d", otp);
-    }
 
 
     public List<TenantUserResponse> getAll(Long tenantId) {
@@ -118,26 +108,4 @@ public class TenantUserService {
                 .build();
     }
 
-    public String sendOtp(String email){
-        TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
-        tenantUser.setOtp(generateOtp());
-        tenantUserRepository.save(tenantUser);
-        return "OTP sent successfully";
-    }
-
-    public String validateOtp(String otp, String email){
-        TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
-        String otpSaved =  tenantUser.getOtp();
-        if(otpSaved.equals(otp)){
-          return "OTP Verified";
-        }
-        return "Invalid OTP";
-    }
-
-    public String reset(String email, String password){
-        TenantUser tenantUser = tenantUserRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + email));
-        tenantUser.setPassword(passwordEncoder.encode(password));
-        tenantUserRepository.save(tenantUser);
-        return "Password Changed Successfully";
-    }
 }

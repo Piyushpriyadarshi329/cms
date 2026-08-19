@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())   // typical for a stateless JSON/JWT API
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**","/auth/otp","/auth/validate","/auth/reset").permitAll()   // <-- NOT "/api/v1/auth/**"
+                        .requestMatchers("/auth/**").permitAll()   // <-- NOT "/api/v1/auth/**"
                         .requestMatchers("/health").permitAll()    // public liveness check (Railway healthcheck)
                         // Swagger / OpenAPI docs — public (paths are relative to the /api/v1 servlet path)
                         .requestMatchers(
@@ -68,7 +68,7 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     // Dev React apps on any localhost port (3000, 5173, etc.). Add your prod origin here later.
-    config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+    config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*", "https://admindashboard-three-psi.vercel.app"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setExposedHeaders(List.of("Authorization"));
