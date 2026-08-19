@@ -40,6 +40,10 @@ public class ContractApprovalController {
     }
 
 
+
+
+//    add esignRequest for internal
+
     @PostMapping("/legal-approve")
     public ResponseEntity<ApiResponse<Void>> contractLegalApprove(
             @PathVariable UUID contractId,
