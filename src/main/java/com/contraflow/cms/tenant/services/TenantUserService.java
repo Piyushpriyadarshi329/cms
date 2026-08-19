@@ -1,6 +1,7 @@
 package com.contraflow.cms.tenant.services;
 
 import com.contraflow.cms.exception.DuplicateResourceException;
+import com.contraflow.cms.exception.InvalidTokenException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.tenant.dto.TenantUserRequest;
 import com.contraflow.cms.tenant.dto.TenantUserResponse;
@@ -13,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TenantUserService {
@@ -23,6 +27,13 @@ public class TenantUserService {
     private TenantRepository tenantRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+    public String generateOtp() {
+        int otp = secureRandom.nextInt(1_000_000);
+        return String.format("%06d", otp);
+    }
 
 
     public List<TenantUserResponse> getAll(Long tenantId) {
@@ -108,4 +119,52 @@ public class TenantUserService {
                 .build();
     }
 
+    public String sendOtp(String email){
+        TenantUser tenantUser = tenantUserRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email : " + email));
+        tenantUser.setOtp(generateOtp());
+        tenantUser.setOtpExpiresAt(LocalDateTime.now().plusMinutes(5));
+        tenantUserRepository.save(tenantUser);
+        return "OTP sent successfully";
+    }
+
+    public String validateOtp(String otp, String email){
+        TenantUser tenantUser = tenantUserRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email : " + email));
+
+        if (tenantUser.getOtp() == null
+                || !tenantUser.getOtp().equals(otp)
+                || tenantUser.getOtpExpiresAt() == null
+                || tenantUser.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidTokenException("Invalid or expired OTP");
+        }
+
+        String otpToken = UUID.randomUUID().toString();
+        tenantUser.setOtpToken(otpToken);
+        tenantUser.setOtpTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+
+        tenantUser.setOtp(null);
+        tenantUser.setOtpExpiresAt(null);
+
+        tenantUserRepository.save(tenantUser);
+        return otpToken;
+    }
+
+    public String reset(String otpToken, String password){
+        TenantUser tenantUser = tenantUserRepository.findByOtpToken(otpToken)
+                .orElseThrow(() -> new InvalidTokenException("Invalid or expired otpToken"));
+
+        if (tenantUser.getOtpTokenExpiresAt() == null
+                || tenantUser.getOtpTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new InvalidTokenException("Invalid or expired otpToken");
+        }
+
+        tenantUser.setPassword(passwordEncoder.encode(password));
+
+        tenantUser.setOtpToken(null);
+        tenantUser.setOtpTokenExpiresAt(null);
+
+        tenantUserRepository.save(tenantUser);
+        return "Password changed successfully";
+    }
 }
