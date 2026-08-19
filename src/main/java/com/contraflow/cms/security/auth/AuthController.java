@@ -4,6 +4,7 @@ package com.contraflow.cms.security.auth;
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.security.jwt.JwtService;
 import com.contraflow.cms.security.jwt.TokenBlacklistService;
+import com.contraflow.cms.tenant.services.TenantUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ private final TenantAuthServices tenantAuthServices;
 private final RefreshTokenService refreshTokenService;
 private final JwtService jwtService;
 private final TokenBlacklistService tokenBlacklistService;
+private final TenantUserService tenantUserService;
 
 
 @PostMapping("/register")
@@ -78,5 +80,22 @@ public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@RequestBody LoginR
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<LoginResponse>> refresh(@RequestBody RefreshTokenRequest request){
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", refreshTokenService.refresh(request.getRefreshToken())));
+    }
+
+    @PostMapping("/otp")
+    public ResponseEntity<ApiResponse<String>> sendOtp(@RequestBody OtpRequest request){
+        return ResponseEntity.ok(ApiResponse.success(tenantUserService.sendOtp(request.getEmail())));
+    }
+
+    // Returns the otpToken in `data` — frontend must carry it into /reset.
+    @PostMapping("/validate")
+    public ResponseEntity<ApiResponse<String>> validateOtp(@RequestBody ValidateRequest request){
+        String otpToken = tenantUserService.validateOtp(request.getOtp(), request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success("OTP verified", otpToken));
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetRequest request){
+        return ResponseEntity.ok(ApiResponse.success(tenantUserService.reset(request.getOtpToken(), request.getPassword())));
     }
 }
