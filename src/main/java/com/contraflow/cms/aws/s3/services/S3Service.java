@@ -16,4 +16,10 @@ public interface S3Service {
      * so callers can pass a possibly-empty DB value straight through.
      */
     String getDownloadUrl(String objectKey);
+
+    /**
+     * Server-side upload of raw bytes. Generates a unique object key under {@code folder/},
+     * stores the object, and returns the key.
+     */
+    String uploadBytes(byte[] content, String folder, String fileName, String contentType);
 }

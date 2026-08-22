@@ -170,8 +170,9 @@ public class ContractService {
                 ? proposalMapper.mapToResponse(proposal)
                 : null;
 
+        // Timeline in chronological order (shaped for the shared frontend timeline component).
         List<TimeLineResponse> timeLineResponseList =
-                contractApprovalHistoryRepository.findByContractId(contract.getId()).stream()
+                contractApprovalHistoryRepository.findByContractIdOrderByActionAtAsc(contract.getId()).stream()
                         .map(timeLineMapper::mapToResponse)
                         .toList();
 

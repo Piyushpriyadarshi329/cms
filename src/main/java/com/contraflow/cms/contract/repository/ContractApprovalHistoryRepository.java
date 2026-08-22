@@ -9,6 +9,9 @@ import java.util.UUID;
 public interface ContractApprovalHistoryRepository extends JpaRepository<ContractApprovalHistory,Long> {
     List<ContractApprovalHistory> findByContractId(UUID ContractId);
 
+    // Ordered chronologically so the timeline can pair consecutive events to compute TAT.
+    List<ContractApprovalHistory> findByContractIdOrderByActionAtAsc(UUID contractId);
+
     List<ContractApprovalHistory> findByContractIdIn(List<UUID> contractIds);
 
 }
