@@ -1,5 +1,6 @@
 package com.contraflow.cms.signer.entity;
 import com.contraflow.cms.contract.entity.Contract;
+import com.contraflow.cms.signer.Enum.ESign_Status;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,4 +62,11 @@ public class Signer {
 
     @Column(name = "otp_token_expires_at")
     private LocalDateTime otpTokenExpiresAt;
+
+    @Enumerated(EnumType.STRING)
+    private ESign_Status status;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean not null default false")
+    private boolean deleted = false;
 }

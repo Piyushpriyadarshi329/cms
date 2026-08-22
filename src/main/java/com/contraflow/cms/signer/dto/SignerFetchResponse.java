@@ -1,5 +1,6 @@
 package com.contraflow.cms.signer.dto;
 
+import com.contraflow.cms.signer.Enum.ESign_Status;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -33,4 +34,6 @@ public class SignerFetchResponse {
     private String clientSignUrl;
 
     private String eSignUrl;
+
+    private ESign_Status eSignStatus;
 }
