@@ -1,0 +1,44 @@
+package com.contraflow.cms.signer.controller;
+
+import com.contraflow.cms.common.dto.ApiResponse;
+import com.contraflow.cms.security.AuthUser;
+import com.contraflow.cms.signer.dto.SignerFetchResponse;
+import com.contraflow.cms.signer.service.SignerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/tenant/signer")
+@RequiredArgsConstructor
+public class SignerController {
+
+    private final SignerService signerService;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<SignerFetchResponse>>> getAll(
+            @AuthenticationPrincipal AuthUser authUser) {
+        List<SignerFetchResponse> signers = signerService.getAllContractsSigner(authUser.getTenantId());
+        return ResponseEntity.ok(ApiResponse.success("Signers fetched successfully", signers));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SignerFetchResponse>> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUser authUser) {
+        SignerFetchResponse signer = signerService.getById(authUser.getTenantId(), id);
+        return ResponseEntity.ok(ApiResponse.success("Signer fetched successfully", signer));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<SignerFetchResponse>> update(
+            @PathVariable Long id,
+            @RequestBody SignerFetchResponse request,
+            @AuthenticationPrincipal AuthUser authUser) {
+        SignerFetchResponse updated = signerService.updateRequest(authUser.getTenantId(), id, request);
+        return ResponseEntity.ok(ApiResponse.success("Signer updated successfully", updated));
+    }
+}

@@ -8,6 +8,7 @@ import com.contraflow.cms.contract.repository.ContractApprovalHistoryRepository;
 import com.contraflow.cms.contract.repository.ContractRepository;
 import com.contraflow.cms.exception.InvalidContractStateException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
+import com.contraflow.cms.signer.service.SignerService;
 import com.contraflow.cms.tenant.entity.TenantUser;
 import com.contraflow.cms.tenant.repository.TenantUserRepository;
 import jakarta.transaction.Transactional;
@@ -26,6 +27,7 @@ public class ContractApprovalService {
     private final ContractRepository contractRepository;
     private final ContractApprovalHistoryRepository contractApprovalHistoryRepository;
     private final TenantUserRepository tenantUserRepository;
+    private final SignerService signerService;
 
     public void managerApprove(Long tenantId, Long userId, UUID contractId, String comment) {
         transition(tenantId, userId, contractId,
@@ -49,6 +51,7 @@ public class ContractApprovalService {
                 ContractStatus.ESIGN_PENDING,
                 ApprovalAction.APPROVED,
                 comment != null ? comment : "Approved by legal");
+        signerService.createRequest(tenantId, contractId);
     }
 
     public void sendForEsign(Long tenantId, Long userId, UUID contractId, String comment) {
