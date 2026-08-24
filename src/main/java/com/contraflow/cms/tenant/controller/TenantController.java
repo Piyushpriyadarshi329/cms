@@ -54,7 +54,7 @@ public class TenantController {
     }
 
     @PatchMapping("/{id}/theme")
-    public ResponseEntity<ApiResponse<ThemeConfig>> updateTheme(@RequestBody TenantThemeRequest request, @PathVariable Long id){
+    public ResponseEntity<ApiResponse<ThemeConfig>> updateTheme(@Valid @RequestBody TenantThemeRequest request, @PathVariable Long id){
         ThemeConfig updated = tenantService.updateTheme(id, request);
         return ResponseEntity.ok(ApiResponse.success("Tenant theme updated successfully", updated));
     }

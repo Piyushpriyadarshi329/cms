@@ -2,6 +2,7 @@ package com.contraflow.cms.contract.controller;
 
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.contract.dto.ContractApprovalRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.contract.service.ContractApprovalService;
 import com.contraflow.cms.security.AuthUser;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class ContractApprovalController {
     @PostMapping("/manager-approve")
     public ResponseEntity<ApiResponse<Void>> contractManagerApprove(
             @PathVariable UUID contractId,
-            @RequestBody(required = false) ContractApprovalRequest request,
+            @Valid @RequestBody(required = false) ContractApprovalRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         contractApprovalService.managerApprove(
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));
@@ -32,7 +33,7 @@ public class ContractApprovalController {
     @PostMapping("/finance-approve")
     public ResponseEntity<ApiResponse<Void>> contractFinanceApprove(
             @PathVariable UUID contractId,
-            @RequestBody(required = false) ContractApprovalRequest request,
+            @Valid @RequestBody(required = false) ContractApprovalRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         contractApprovalService.financeApprove(
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));
@@ -47,7 +48,7 @@ public class ContractApprovalController {
     @PostMapping("/legal-approve")
     public ResponseEntity<ApiResponse<Void>> contractLegalApprove(
             @PathVariable UUID contractId,
-            @RequestBody(required = false) ContractApprovalRequest request,
+            @Valid @RequestBody(required = false) ContractApprovalRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         contractApprovalService.legalApprove(
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));
@@ -58,7 +59,7 @@ public class ContractApprovalController {
     @PostMapping("/esign")
     public ResponseEntity<ApiResponse<Void>> contractSendESign(
             @PathVariable UUID contractId,
-            @RequestBody(required = false) ContractApprovalRequest request,
+            @Valid @RequestBody(required = false) ContractApprovalRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         contractApprovalService.sendForEsign(
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));
@@ -70,7 +71,7 @@ public class ContractApprovalController {
     @PostMapping("/close")
     public ResponseEntity<ApiResponse<Void>> contractClose(
             @PathVariable UUID contractId,
-            @RequestBody(required = false) ContractApprovalRequest request,
+            @Valid @RequestBody(required = false) ContractApprovalRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         contractApprovalService.close(
                 authUser.getTenantId(), authUser.getUserId(), contractId, comment(request));

@@ -3,6 +3,7 @@ package com.contraflow.cms.client.controller;
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.dto.ClientUserRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.client.dto.ClientUserResponse;
 import com.contraflow.cms.client.services.ClientUserService;
 import com.contraflow.cms.security.AuthUser;
@@ -41,7 +42,7 @@ public class ClientUserController {
 
 
     @PostMapping("/{clientId}/user")
-    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@PathVariable Long clientId, @RequestBody ClientUserRequest request, @AuthenticationPrincipal AuthUser authUser){
+    public ResponseEntity<ApiResponse<ClientUserResponse>> createClientUser(@PathVariable Long clientId, @Valid @RequestBody ClientUserRequest request, @AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
         ClientUserResponse user = service.createClientUser(tenantId,clientId,request);
 
@@ -51,7 +52,7 @@ public class ClientUserController {
 
 
     @PutMapping("/{clientId}/user/{id}")
-    public ResponseEntity<ApiResponse<ClientUserResponse>> updateClientUser(@PathVariable Long id,@PathVariable Long clientId,   @RequestBody ClientUserRequest request){
+    public ResponseEntity<ApiResponse<ClientUserResponse>> updateClientUser(@PathVariable Long id,@PathVariable Long clientId,   @Valid @RequestBody ClientUserRequest request){
 
         ClientUserResponse user = service.updateClientUser(id,clientId, request);
 

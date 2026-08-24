@@ -22,7 +22,7 @@ public class S3Controller {
 
 
     @PostMapping("/presigned-upload")
-    public ResponseEntity<ApiResponse<PresignedUploadResponse>> createPresigned(@RequestBody PresignedUploadRequest presignedUploadRequest){
+    public ResponseEntity<ApiResponse<PresignedUploadResponse>> createPresigned(@Valid @RequestBody PresignedUploadRequest presignedUploadRequest){
         return ResponseEntity.ok(
                 ApiResponse.success("Upload URL generated successfully",
                         s3Service.generateUploadUrl(presignedUploadRequest)));

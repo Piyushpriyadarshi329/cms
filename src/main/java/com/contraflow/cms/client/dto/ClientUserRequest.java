@@ -19,7 +19,8 @@ public class ClientUserRequest {
     @NotBlank
     private String lastname;
 
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$")
+    @NotBlank
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Mobile number is invalid")
     private String mobile;
 
     @Email

@@ -2,6 +2,7 @@ package com.contraflow.cms.client.controller;
 
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.client.dto.ClientRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.client.dto.ClientResponse;
 import com.contraflow.cms.client.services.ClientService;
 import com.contraflow.cms.security.AuthUser;
@@ -46,7 +47,7 @@ public class ClientController {
     @PostMapping("/client")
     public ResponseEntity<ApiResponse<ClientResponse>> createClient(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestBody ClientRequest request) {
+            @Valid @RequestBody ClientRequest request) {
 
         ClientResponse client = service.createClient(authUser.getTenantId(), request);
 
@@ -58,7 +59,7 @@ public class ClientController {
     public ResponseEntity<ApiResponse<ClientResponse>> updateClient(
             @AuthenticationPrincipal AuthUser principal,
             @PathVariable Long id,
-            @RequestBody ClientRequest request) {
+            @Valid @RequestBody ClientRequest request) {
 
         ClientResponse client = service.updateClient(id, principal.getTenantId(), request);
 

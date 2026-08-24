@@ -2,6 +2,7 @@ package com.contraflow.cms.ai.controller;
 
 
 import com.contraflow.cms.ai.dto.ChatRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.ai.dto.ChatResponse;
 import com.contraflow.cms.ai.dto.ContractPdfRequest;
 import com.contraflow.cms.ai.dto.ContractPdfResponse;
@@ -25,7 +26,7 @@ public class AIController {
     private final ContractPdfService contractPdfService;
 
     @PostMapping("/chat")
-    public ResponseEntity<ApiResponse<ChatResponse>> chat(@RequestBody ChatRequest chatRequest) {
+    public ResponseEntity<ApiResponse<ChatResponse>> chat(@Valid @RequestBody ChatRequest chatRequest) {
         try {
             ChatResponse chatResponse = new ChatResponse();
             chatResponse.setResult(chatServices.OpenAIChat(chatRequest));
@@ -39,7 +40,7 @@ public class AIController {
 
     @PostMapping("/contract/pdf")
     public ResponseEntity<ApiResponse<ContractPdfResponse>> generateContractPdf(
-            @RequestBody ContractPdfRequest request,
+            @Valid @RequestBody ContractPdfRequest request,
             @AuthenticationPrincipal AuthUser authUser) {
         try {
             ContractPdfResponse result =

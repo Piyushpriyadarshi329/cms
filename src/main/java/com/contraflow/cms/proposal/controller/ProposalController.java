@@ -4,6 +4,7 @@ package com.contraflow.cms.proposal.controller;
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.proposal.dto.ProposalDetailResponse;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.proposal.dto.ProposalDiscussionResponse;
 import com.contraflow.cms.proposal.dto.ProposalRequest;
 import com.contraflow.cms.proposal.dto.ProposalResponse;
@@ -42,7 +43,7 @@ public class ProposalController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProposalResponse>> createProposal(@RequestBody ProposalRequest proposalRequest, @AuthenticationPrincipal AuthUser authUser){
+    public ResponseEntity<ApiResponse<ProposalResponse>> createProposal(@Valid @RequestBody ProposalRequest proposalRequest, @AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
         ProposalResponse created = proposalServices.createProposal(tenantId, proposalRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -52,7 +53,7 @@ public class ProposalController {
 
 
     @PostMapping("/{id}/discussion")
-    public ResponseEntity<ApiResponse<ProposalDiscussionResponse>> createProposalDiscussion(@AuthenticationPrincipal AuthUser authUser,  @RequestBody ProposalDiscussionRequest proposalDiscussionRequest){
+    public ResponseEntity<ApiResponse<ProposalDiscussionResponse>> createProposalDiscussion(@AuthenticationPrincipal AuthUser authUser,  @Valid @RequestBody ProposalDiscussionRequest proposalDiscussionRequest){
        Long tenantId = authUser.getTenantId();
         ProposalDiscussionResponse created = proposalDiscussionService.addDiscussion(tenantId, proposalDiscussionRequest);
         return ResponseEntity.status(HttpStatus.CREATED)

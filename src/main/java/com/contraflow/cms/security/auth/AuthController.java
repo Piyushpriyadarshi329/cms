@@ -34,14 +34,14 @@ public ResponseEntity<ApiResponse<RegisterResponse>> register(@Valid @RequestBod
 
 
 @PostMapping("admin/login")
-public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@RequestBody LoginRequest request){
+public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request){
     return ResponseEntity.ok(ApiResponse.success("Login successful", adminAuthService.login(request)));
 }
 
 
 
     @PostMapping("tenant/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> tenantLogin(@RequestBody LoginRequest request){
+    public ResponseEntity<ApiResponse<LoginResponse>> tenantLogin(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(ApiResponse.success("Login successful", tenantAuthServices.login(request)));
     }
 
@@ -78,24 +78,24 @@ public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@RequestBody LoginR
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@RequestBody RefreshTokenRequest request){
+    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request){
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", refreshTokenService.refresh(request.getRefreshToken())));
     }
 
     @PostMapping("/otp")
-    public ResponseEntity<ApiResponse<String>> sendOtp(@RequestBody OtpRequest request){
+    public ResponseEntity<ApiResponse<String>> sendOtp(@Valid @RequestBody OtpRequest request){
         return ResponseEntity.ok(ApiResponse.success(tenantUserService.sendOtp(request.getEmail())));
     }
 
     // Returns the otpToken in `data` — frontend must carry it into /reset.
     @PostMapping("/validate")
-    public ResponseEntity<ApiResponse<String>> validateOtp(@RequestBody ValidateRequest request){
+    public ResponseEntity<ApiResponse<String>> validateOtp(@Valid @RequestBody ValidateRequest request){
         String otpToken = tenantUserService.validateOtp(request.getOtp(), request.getEmail());
         return ResponseEntity.ok(ApiResponse.success("OTP verified", otpToken));
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetRequest request){
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetRequest request){
         return ResponseEntity.ok(ApiResponse.success(tenantUserService.reset(request.getOtpToken(), request.getPassword())));
     }
 }

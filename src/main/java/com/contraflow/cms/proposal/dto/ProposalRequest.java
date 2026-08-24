@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 
 
@@ -40,6 +41,7 @@ public class ProposalRequest {
 
 
     @NotNull(message = "Proposal amount is required")
+    @Positive(message = "Proposal amount must be positive")
     private Long proposalAmount;
 
     @NotNull(message = "Billing Type is required")

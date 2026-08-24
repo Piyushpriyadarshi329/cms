@@ -3,6 +3,7 @@ package com.contraflow.cms.contract.controller;
 
 import com.contraflow.cms.common.dto.ApiResponse;
 import com.contraflow.cms.contract.dto.ContractRequest;
+import jakarta.validation.Valid;
 import com.contraflow.cms.contract.dto.ContractResponse;
 import com.contraflow.cms.contract.dto.ContractRevertRequest;
 import com.contraflow.cms.contract.dto.ContractSummaryResponse;
@@ -26,7 +27,7 @@ public class ContractController {
 
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> getContract(@AuthenticationPrincipal AuthUser authUser, @RequestBody ContractRequest request){
+    public ResponseEntity<ApiResponse<Void>> getContract(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody ContractRequest request){
     Long tenantId = authUser.getTenantId();
     Long UserId = authUser.getUserId();
         contractService.createContract(tenantId, UserId,request);
@@ -63,7 +64,7 @@ public class ContractController {
     @PostMapping("/{id}/revert")
     public ResponseEntity<ApiResponse<Void>> revertToProposal(
             @PathVariable UUID id,
-            @RequestBody(required = false) ContractRevertRequest request,
+            @Valid @RequestBody(required = false) ContractRevertRequest request,
             @AuthenticationPrincipal AuthUser authUser){
         Long tenantId = authUser.getTenantId();
         Long userId = authUser.getUserId();
