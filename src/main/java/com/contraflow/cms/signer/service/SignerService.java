@@ -2,14 +2,18 @@ package com.contraflow.cms.signer.service;
 
 import com.contraflow.cms.contract.entity.Contract;
 import com.contraflow.cms.contract.repository.ContractRepository;
+import com.contraflow.cms.exception.InvalidTokenException;
 import com.contraflow.cms.exception.ResourceNotFoundException;
 import com.contraflow.cms.signer.Enum.ESign_Status;
 import com.contraflow.cms.signer.dto.SignerFetchResponse;
+import com.contraflow.cms.signer.dto.SignerUpdateRequest;
 import com.contraflow.cms.signer.entity.Signer;
 import com.contraflow.cms.signer.repository.SignerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +23,13 @@ public class SignerService {
     private SignerRepository signerRepository;
     @Autowired
     private ContractRepository contractRepository;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+
+    public String generateOtp() {
+        int otp = secureRandom.nextInt(1_000_000);
+        return String.format("%06d", otp);
+    }
 
 
   public List<SignerFetchResponse> getAllContractsSigner(Long tenantId){
@@ -48,9 +59,52 @@ public class SignerService {
     return "Request Sent for ESign Successfully";
   }
 
-  public SignerFetchResponse updateRequest(Long tenantId, Long id, SignerFetchResponse request){
+  public String sendOtp(Long tenantId, Long id){
     Signer signer = signerRepository.findByTenantIdAndIdAndDeletedFalse(tenantId, id)
             .orElseThrow(() -> new ResourceNotFoundException("Signer not found with id : " + id));
+
+    signer.setOtp(generateOtp());
+    signer.setOtpExpiresAt(LocalDateTime.now().plusMinutes(5));
+    signerRepository.save(signer);
+    return "OTP sent successfully";
+  }
+
+  // Verifies the OTP and, on success, issues a short-lived, single-use otpToken.
+  // The caller must carry this token into updateRequest — without it, the sign
+  // fields/status can't be changed, so no one can complete a sign step without OTP.
+  public String validateOtp(Long tenantId, Long id, String otp){
+    Signer signer = signerRepository.findByTenantIdAndIdAndDeletedFalse(tenantId, id)
+            .orElseThrow(() -> new ResourceNotFoundException("Signer not found with id : " + id));
+
+    if (signer.getOtp() == null
+            || !signer.getOtp().equals(otp)
+            || signer.getOtpExpiresAt() == null
+            || signer.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
+      throw new InvalidTokenException("Invalid or expired OTP");
+    }
+
+    String otpToken = UUID.randomUUID().toString();
+    signer.setOtpToken(otpToken);
+    signer.setOtpTokenExpiresAt(LocalDateTime.now().plusMinutes(15));
+
+    // OTP is single-use — clear it now so it can't be replayed.
+    signer.setOtp(null);
+    signer.setOtpExpiresAt(null);
+
+    signerRepository.save(signer);
+    return otpToken;
+  }
+
+  public SignerFetchResponse updateRequest(Long tenantId, Long id, SignerUpdateRequest request){
+    Signer signer = signerRepository.findByTenantIdAndIdAndDeletedFalse(tenantId, id)
+            .orElseThrow(() -> new ResourceNotFoundException("Signer not found with id : " + id));
+
+    if (signer.getOtpToken() == null
+            || !signer.getOtpToken().equals(request.getOtpToken())
+            || signer.getOtpTokenExpiresAt() == null
+            || signer.getOtpTokenExpiresAt().isBefore(LocalDateTime.now())) {
+      throw new InvalidTokenException("Invalid or expired otpToken");
+    }
 
     signer.setContractUrl(request.getContractUrl());
     signer.setInternalSignBy(request.getInternalSignBy());
@@ -61,6 +115,9 @@ public class SignerService {
     signer.setClientSignUrl(request.getClientSignUrl());
     signer.setESignUrl(request.getESignUrl());
     signer.setStatus(request.getESignStatus());
+
+    signer.setOtpToken(null);
+    signer.setOtpTokenExpiresAt(null);
 
     Signer saved = signerRepository.save(signer);
     return toResponse(saved);
